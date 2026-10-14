@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffb18a">
+<title>ChatDL AI</title>
+<style>
+:root{--ink:#3c2c4a;--muted:#796b83;--glass:#ffffffc9;--line:#e8d8ee}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(145deg,#ffe8a8,#ffb7a9 42%,#d9baff 78%,#b9e1ff)}
+button,textarea{font:inherit}
+button{cursor:pointer;border:0}
+.app{max-width:850px;margin:auto;padding:16px;min-height:100vh;display:flex;flex-direction:column;gap:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:44px;height:44px;border-radius:15px;background:linear-gradient(135deg,#ff985c,#b675e9);display:grid;place-items:center;color:white;font-size:24px}
+h1{font-size:21px;margin:0}
+small,.muted{color:var(--muted)}
+.card{background:var(--glass);border:1px solid #ffffffd9;border-radius:22px;padding:18px;box-shadow:0 12px 40px #76508012}
+.hero h2{font-size:clamp(26px,6vw,36px);margin:0 0 8px}
+.hero p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.tile{text-align:left;padding:13px;border-radius:16px;background:#ffffffa8;color:var(--ink);border:1px solid #ffffffd9}
+.tile b{display:block;margin:5px 0}
+.tile small{font-size:12px}
+.chat{flex:1;min-height:230px}
+.messages{display:flex;flex-direction:column;gap:11px}
+.msg{padding:12px 14px;border-radius:17px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:95%}
+.ai{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px}
+.user{align-self:flex-end;background:linear-gradient(135deg,#ffc07f,#d8a5ee);border-bottom-right-radius:5px}
+.composer{background:white;border-radius:21px;padding:10px}
+textarea{display:block;width:100%;min-height:65px;resize:vertical;border:0;outline:0;padding:10px;background:transparent;color:var(--ink)}
+.controls{display:flex;flex-wrap:wrap;gap:7px}
+.btn{padding:10px 12px;border-radius:12px;background:#f4eafa;color:#51405f}
+.primary{margin-left:auto;background:linear-gradient(120deg,#ff9f62,#b977e7);color:white;font-weight:700}
+#picture img{max-width:100%;border-radius:15px;margin-top:10px}
+#status{font-size:12px;color:var(--muted);padding:0 4px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,1fr)}.app{padding:24px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+  <div class="brand"><div class="logo">☀</div><div><h1>ChatDL AI</h1><small>Trợ lý AI của bạn</small></div></div>
+  <button class="btn" id="newChat">＋ Chat mới</button>
+</header>
+
+<section class="card hero">
+  <h2>Xin chào đến với <span style="color:#ad68d6">ChatDL AI</span> ✨</h2>
+  <p>Học tập, tìm hiểu, sáng tạo và biến ý tưởng thành hình ảnh.</p>
+</section>
+
+<section class="grid">
+  <button class="tile" data-prompt="Hãy giúp tôi học một chủ đề bằng cách giải thích dễ hiểu và cho ví dụ.">📚<b>Học tập</b><small>Giải thích, ôn bài</small></button>
+  <button class="tile" data-prompt="Hãy cung cấp thông tin sức khỏe tổng quát, dễ hiểu.">💗<b>Sức khỏe</b><small>Thông tin tham khảo</small></button>
+  <button class="tile" data-prompt="Hãy giúp tôi viết và giải thích code từng bước.">💻<b>Lập trình</b><small>Viết và sửa code</small></button>
+  <button class="tile" data-prompt="Hãy giúp tôi phát triển một ý tưởng sáng tạo.">🎨<b>Sáng tạo</b><small>Ý tưởng mới</small></button>
+</section>
+
+<section class="card chat">
+  <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:14px">
+    <b>✦ Trò chuyện</b><small id="connection">Đang kiểm tra...</small>
+  </div>
+  <div class="messages" id="messages">
+    <div class="msg ai">Chào bạn! Mình là ChatDL AI. Hôm nay bạn muốn hỏi gì?</div>
+  </div>
+  <div id="picture"></div>
+</section>
+
+<section class="composer">
+  <textarea id="question" placeholder="Nhập câu hỏi hoặc mô tả hình ảnh..."></textarea>
+  <div class="controls">
+    <button class="btn" id="mic">🎙️ Micro</button>
+    <button class="btn" id="read">🔊 Đọc câu trả lời</button>
+    <button class="btn" id="image">🖼️ Tạo ảnh</button>
+    <button class="btn primary" id="send">Gửi ↑</button>
+  </div>
+</section>
+<div id="status">Máy chủ AI cần được triển khai và cấu hình API key an toàn.</div>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+let history=[],lastAnswer="",busy=false;
+
+function message(text,role="ai"){
+  const el=document.createElement("div");
+  el.className="msg "+role;
+  el.textContent=text;
+  $("#messages").appendChild(el);
+  el.scrollIntoView({behavior:"smooth",block:"nearest"});
+  return el;
+}
+function status(text){$("#status").textContent=text}
+
+async function chat(){
+  const text=$("#question").value.trim();
+  if(!text||busy)return;
+  $("#question").value="";
+  message(text,"user");
+  history.push({role:"user",content:text});
+  const pending=message("ChatDL AI đang suy nghĩ...");
+  busy=true;$("#send").disabled=true;
+  status("Đang kết nối AI...");
+  try{
+    const r=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text,history:history.slice(-10)})
+    });
+    const d=await r.json();
+    if(!r.ok)throw Error(d.error||"Lỗi kết nối");
+    pending.remove();
+    lastAnswer=d.answer||"Chưa có câu trả lời.";
+    message(lastAnswer);
+    history.push({role:"assistant",content:lastAnswer});
+    status("Đã nhận câu trả lời.");
+  }catch(e){
+    pending.remove();
+    message("Chưa kết nối được AI: "+e.message);
+    status("Kiểm tra backend và OPENAI_API_KEY trong Secrets.");
+  }finally{
+    busy=false;$("#send").disabled=false;
+  }
+}
+
+async function createImage(){
+  const prompt=$("#question").value.trim();
+  if(!prompt){status("Hãy nhập mô tả hình ảnh trước.");return}
+  $("#picture").textContent="Đang tạo ảnh...";
+  try{
+    const r=await fetch("/api/image",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({prompt})
+    });
+    const d=await r.json();
+    if(!r.ok)throw Error(d.error||"Lỗi tạo ảnh");
+    $("#picture").replaceChildren();
+    const img=document.createElement("img");
+    img.alt=prompt;
+    if(d.url)img.src=d.url;
+    else if(d.b64_json)img.src="data:image/png;base64,"+d.b64_json;
+    else throw Error("Dịch vụ không trả về dữ liệu ảnh.");
+    $("#picture").appendChild(img);
+    status("Đã tạo ảnh.");
+  }catch(e){$("#picture").textContent="";status("Tạo ảnh thất bại: "+e.message)}
+}
+
+function speak(){
+  if(!lastAnswer){status("Hãy gửi câu hỏi trước.");return}
+  if(!("speechSynthesis" in window)){status("Trình duyệt không hỗ trợ đọc thành tiếng.");return}
+  speechSynthesis.cancel();
+  const utterance=new SpeechSynthesisUtterance(lastAnswer);
+  utterance.lang="vi-VN";
+  speechSynthesis.speak(utterance);
+}
+
+function listen(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){status("Trình duyệt này chưa hỗ trợ nhập giọng nói. Bạn có thể dùng bàn phím.");return}
+  const rec=new SR();
+  rec.lang="vi-VN";
+  rec.onresult=e=>{$("#question").value=e.results[0][0].transcript;status("Đã nhận giọng nói. Nhấn Gửi để hỏi AI.")};
+  rec.onerror=()=>status("Không nhận được giọng nói. Hãy kiểm tra quyền micro.");
+  rec.start();
+  status("Đang nghe... hãy nói câu hỏi.");
+}
+
+$("#send").onclick=chat;
+$("#image").onclick=createImage;
+$("#read").onclick=speak;
+$("#mic").onclick=listen;
+$("#question").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();chat()}
+});
+document.querySelectorAll("[data-prompt]").forEach(b=>{
+  b.onclick=()=>{$("#question").value=b.dataset.prompt;$("#question").focus()}
+});
+$("#newChat").onclick=()=>{
+  history=[];lastAnswer="";
+  $("#messages").replaceChildren();
+  $("#picture").replaceChildren();
+  message("Cuộc trò chuyện mới bắt đầu! Bạn muốn hỏi gì?");
+  status("Đã tạo cuộc trò chuyện mới.");
+};
+fetch("/api/health").then(r=>r.json()).then(d=>{
+  $("#connection").textContent=d.ok?"Máy chủ sẵn sàng":"Chưa cấu hình API";
+}).catch(()=>$("#connection").textContent="Chưa có máy chủ");
+</script>
+</body>
+</html>
