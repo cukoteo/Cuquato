@@ -1,0 +1,357 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ROWARIOR 3D - Prototype 0.2</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;background:#080b12;color:white;font-family:Arial,sans-serif;touch-action:none}
+#game{position:fixed;inset:0}
+#hud{position:fixed;inset:0;pointer-events:none}
+.panel{background:#101827dd;border:1px solid #b68b48;border-radius:9px;padding:11px 15px}
+#brand{position:absolute;top:16px;left:18px}
+#brand b{color:#e8bd70;letter-spacing:3px;font-size:20px}
+#brand small{display:block;color:#aab2c0;margin-top:5px;font-size:10px}
+#settings{position:absolute;top:95px;left:18px;pointer-events:auto}
+select{background:#222c3b;color:white;border:1px solid #b68b48;padding:7px;border-radius:5px;margin-top:5px}
+#help{position:absolute;top:18px;right:18px;text-align:right;color:#ddd;font-size:12px;line-height:1.8}
+#status{position:absolute;bottom:18px;left:18px;font-size:12px}
+#health{width:175px;height:7px;background:#333;margin:7px 0;border-radius:8px;overflow:hidden}
+#health span{display:block;width:100%;height:100%;background:#c43f3f}
+#fps{position:absolute;bottom:18px;right:18px;color:#e8bd70;font-size:12px}
+#joystick{display:none;position:absolute;bottom:30px;left:30px;width:125px;height:125px;border:2px solid #ffffff66;background:#18233388;border-radius:50%;pointer-events:auto;touch-action:none}
+#stick{position:absolute;left:36px;top:36px;width:48px;height:48px;border-radius:50%;background:#d2aa68dd;border:2px solid #f3d49a}
+.control{display:none;position:absolute;right:28px;width:68px;height:68px;border-radius:50%;background:#542f2dcc;color:white;border:2px solid #e4b76c;font-weight:bold;pointer-events:auto;touch-action:none}
+#attack{bottom:45px}
+#jump{bottom:125px;right:105px;width:58px;height:58px}
+#rotate{display:none;position:fixed;inset:0;background:#080b12;z-index:10;align-items:center;justify-content:center;text-align:center;padding:25px}
+@media(orientation:portrait) and (max-width:800px){#rotate{display:flex}}
+@media(pointer:coarse){#joystick,.control{display:block}#help{display:none}}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<div id="hud">
+ <div id="brand" class="panel"><b>ROWARIOR</b><small>THE FORGOTTEN KINGDOM · 3D PROTOTYPE</small></div>
+ <div id="settings" class="panel">
+  <label for="quality">ĐỒ HỌA</label><br>
+  <select id="quality">
+   <option value="low">LOW - Máy yếu</option>
+   <option value="balanced">BALANCED</option>
+   <option value="high">HIGH</option>
+  </select>
+ </div>
+ <div id="help">WASD: DI CHUYỂN<br>CHUỘT: XOAY CAMERA<br>SHIFT: CHẠY NHANH<br>SPACE: NHẢY</div>
+ <div id="status" class="panel">CHIẾN BINH · CẤP 01<div id="health"><span></span></div>HP 100 / 100</div>
+ <div id="fps">FPS: --</div>
+ <div id="joystick"><div id="stick"></div></div>
+ <button id="attack" class="control">ĐÁNH</button>
+ <button id="jump" class="control">NHẢY</button>
+</div>
+<div id="rotate"><div><div style="font-size:55px">📱</div><h2>HÃY XOAY NGANG THIẾT BỊ</h2><p>ROWARIOR được thiết kế để chơi màn hình ngang.</p></div></div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from "three";
+
+const mount=document.getElementById("game");
+const isMobile=matchMedia("(pointer:coarse)").matches;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x101827);
+scene.fog=new THREE.Fog(0x101827,18,65);
+
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,120);
+const renderer=new THREE.WebGLRenderer({
+ antialias:!isMobile,
+ powerPreference:"high-performance",
+ stencil:false
+});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?1:1.5));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
+renderer.shadowMap.enabled=false;
+mount.appendChild(renderer.domElement);
+
+// LIGHT
+scene.add(new THREE.HemisphereLight(0x9db7d8,0x292016,2));
+const moon=new THREE.DirectionalLight(0xffd9a0,2);
+moon.position.set(-8,16,8);
+moon.castShadow=false;
+scene.add(moon);
+
+// MATERIALS
+const stone=new THREE.MeshStandardMaterial({color:0x555b66,roughness:1});
+const dark=new THREE.MeshStandardMaterial({color:0x252c38,roughness:1});
+const gold=new THREE.MeshStandardMaterial({color:0xb88a43,metalness:.5,roughness:.4});
+const armor=new THREE.MeshStandardMaterial({color:0x303d52,metalness:.55,roughness:.4});
+const black=new THREE.MeshStandardMaterial({color:0x111722,roughness:.8});
+
+function block(x,y,z,w,h,d,mat){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+ m.position.set(x,y,z);
+ m.castShadow=true;m.receiveShadow=true;
+ scene.add(m);return m;
+}
+
+// FLOOR
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(100,100),
+ new THREE.MeshStandardMaterial({color:0x34333a,roughness:1}));
+floor.rotation.x=-Math.PI/2;
+scene.add(floor);
+
+for(let x=-4;x<=4;x++){
+ for(let z=-8;z<=4;z++){
+  block(x*3,.02,z*3,2.9,.1,2.9,
+   (x+z)%2===0?stone:dark);
+ }
+}
+
+// CASTLE WALLS
+for(let z=-20;z<15;z+=6){
+ block(-12,4,z,2,8,5,stone);
+ block(12,4,z,2,8,5,stone);
+ block(-12,8.2,z,2.5,.5,5.5,dark);
+ block(12,8.2,z,2.5,.5,5.5,dark);
+}
+for(let z=-18;z<14;z+=12){
+ block(-9,5,z,1.5,10,1.5,dark);
+ block(9,5,z,1.5,10,1.5,dark);
+ block(0,10,z,19,1.5,1.5,dark);
+}
+
+// GATE
+block(0,3,-24,10,6,1.5,dark);
+block(0,3,-23,5,6,.5,black);
+block(0,6.3,-23,10,.4,1,gold);
+for(let x=-2;x<=2;x+=.8)block(x,3,-22.65,.12,5,.15,gold);
+
+// TORCHES
+const torches=[];
+function torch(x,z){
+ const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,1.5,7),gold);
+ pole.position.set(x,2.4,z);scene.add(pole);
+ const flame=new THREE.Mesh(new THREE.IcosahedronGeometry(.25,1),
+  new THREE.MeshBasicMaterial({color:0xffa33b}));
+ flame.position.set(x,3.25,z);scene.add(flame);
+ const light=new THREE.PointLight(0xff8a32,10,8);
+ light.position.set(x,3.3,z);scene.add(light);
+ torches.push({flame,light});
+}
+for(let z=-20;z<12;z+=8){torch(-10.5,z);torch(10.5,z)}
+
+// PLAYER
+const player=new THREE.Group();scene.add(player);
+function addPart(geo,mat,x,y,z){
+ const m=new THREE.Mesh(geo,mat);
+ m.position.set(x,y,z);m.castShadow=true;
+ player.add(m);return m;
+}
+addPart(new THREE.CylinderGeometry(.43,.52,1.15,8),armor,0,1.55,0);
+addPart(new THREE.BoxGeometry(.8,.55,.28),gold,0,1.65,-.28);
+addPart(new THREE.SphereGeometry(.37,12,10),armor,0,2.45,0);
+addPart(new THREE.ConeGeometry(.43,.6,5),dark,0,2.8,0);
+addPart(new THREE.BoxGeometry(.42,.09,.1),gold,0,2.45,-.34);
+
+function limb(x,y,len,mat){
+ const m=addPart(new THREE.CylinderGeometry(.14,.18,len,7),mat,x,y,0);
+ return m;
+}
+const leftArm=limb(-.57,1.55,.9,armor);
+const rightArm=limb(.57,1.55,.9,armor);
+const leftLeg=limb(-.23,.55,.85,black);
+const rightLeg=limb(.23,.55,.85,black);
+
+// SWORD
+const sword=new THREE.Group();
+const blade=new THREE.Mesh(new THREE.BoxGeometry(.12,1.25,.1),
+ new THREE.MeshStandardMaterial({color:0xdce4ee,metalness:.9,roughness:.2}));
+blade.position.y=.7;sword.add(blade);
+const guard=new THREE.Mesh(new THREE.BoxGeometry(.5,.1,.15),gold);
+guard.position.y=.12;sword.add(guard);
+const handle=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.45,8),black);
+handle.position.y=-.13;sword.add(handle);
+sword.position.set(.72,1.15,-.05);
+sword.rotation.z=-.3;player.add(sword);
+player.position.set(0,0,3);
+
+// INPUT
+const keys={};
+addEventListener("keydown",e=>{
+ keys[e.key.toLowerCase()]=true;
+ if(e.code==="Space")jump();
+});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+let yaw=0,pitch=.18,dragging=false,lastX=0,lastY=0;
+renderer.domElement.addEventListener("pointerdown",e=>{
+ if(e.pointerType==="mouse"&&e.button===0){
+  dragging=true;lastX=e.clientX;lastY=e.clientY;
+ }
+});
+addEventListener("pointerup",()=>dragging=false);
+addEventListener("pointermove",e=>{
+ if(!dragging)return;
+ yaw-=(e.clientX-lastX)*.006;
+ pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lastY)*.003,-.15,.8);
+ lastX=e.clientX;lastY=e.clientY;
+});
+
+// TOUCH JOYSTICK
+const joy=document.getElementById("joystick");
+const stick=document.getElementById("stick");
+let joyX=0,joyY=0,joyActive=false;
+joy.addEventListener("pointerdown",e=>{
+ joyActive=true;joy.setPointerCapture(e.pointerId);moveJoy(e);
+});
+joy.addEventListener("pointermove",e=>{if(joyActive)moveJoy(e)});
+function moveJoy(e){
+ const r=joy.getBoundingClientRect();
+ let dx=e.clientX-r.left-r.width/2;
+ let dy=e.clientY-r.top-r.height/2;
+ const len=Math.hypot(dx,dy),max=38;
+ if(len>max){dx=dx/len*max;dy=dy/len*max}
+ joyX=dx/max;joyY=dy/max;
+ stick.style.transform=`translate(${dx}px,${dy}px)`;
+}
+function resetJoy(){
+ joyActive=false;joyX=0;joyY=0;
+ stick.style.transform="translate(0,0)";
+}
+joy.addEventListener("pointerup",resetJoy);
+joy.addEventListener("pointercancel",resetJoy);
+
+// JUMP
+let verticalSpeed=0,grounded=true;
+function jump(){if(grounded){verticalSpeed=6;grounded=false}}
+document.getElementById("jump").addEventListener("pointerdown",jump);
+
+// ATTACK
+let attackTime=0;
+document.getElementById("attack").addEventListener("pointerdown",()=>{
+ attackTime=.35;
+});
+
+// CAMERA
+const target=new THREE.Vector3();
+function updateCamera(){
+ const d=7,h=Math.cos(pitch)*d;
+ camera.position.set(
+  player.position.x+Math.sin(yaw)*h,
+  player.position.y+2.6+Math.sin(pitch)*d,
+  player.position.z+Math.cos(yaw)*h
+ );
+ target.set(player.position.x,player.position.y+1.5,player.position.z);
+ camera.lookAt(target);
+}
+
+// QUALITY SETTINGS
+const quality=document.getElementById("quality");
+function setQuality(level){
+ const options={
+  low:{pixel:.8,shadows:false,fog:42},
+  balanced:{pixel:1.2,shadows:false,fog:65},
+  high:{pixel:1.5,shadows:true,fog:75}
+ };
+ const s=options[level];
+ renderer.setPixelRatio(Math.min(devicePixelRatio,s.pixel));
+ renderer.shadowMap.enabled=s.shadows;
+ moon.castShadow=s.shadows;
+ scene.fog.far=s.fog;
+ localStorage.setItem("rowarior_quality",level);
+}
+const saved=localStorage.getItem("rowarior_quality")||(isMobile?"low":"balanced");
+quality.value=saved;setQuality(saved);
+quality.addEventListener("change",()=>setQuality(quality.value));
+
+// FPS
+let fpsFrames=0,fpsTimer=0,lowTime=0;
+function updateFPS(dt){
+ fpsFrames++;fpsTimer+=dt;
+ if(fpsTimer>=1){
+  const fps=Math.round(fpsFrames/fpsTimer);
+  document.getElementById("fps").textContent="FPS: "+fps;
+  fpsFrames=0;fpsTimer=0;
+  if(fps<25)lowTime++;
+  else lowTime=0;
+  if(lowTime>=3&&quality.value!=="low"){
+   quality.value="low";setQuality("low");lowTime=0;
+  }
+ }
+}
+
+// GAME LOOP
+const clock=new THREE.Clock();
+let walkTime=0;
+function animate(){
+ requestAnimationFrame(animate);
+ const dt=Math.min(clock.getDelta(),.04);
+
+ let forward=0,side=0;
+ if(keys.w||keys.arrowup)forward++;
+ if(keys.s||keys.arrowdown)forward--;
+ if(keys.a||keys.arrowleft)side--;
+ if(keys.d||keys.arrowright)side++;
+ forward-=joyY;side+=joyX;
+
+ const length=Math.hypot(forward,side);
+ if(length>1){forward/=length;side/=length}
+ const speed=(keys.shift?8:5)*dt;
+ const dx=(Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed;
+ const dz=(Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed;
+
+ player.position.x=THREE.MathUtils.clamp(player.position.x+dx,-8.5,8.5);
+ player.position.z=THREE.MathUtils.clamp(player.position.z+dz,-21,12);
+
+ if(length>.08){
+  player.rotation.y=THREE.MathUtils.lerp(
+   player.rotation.y,Math.atan2(dx,dz),Math.min(1,dt*10));
+  walkTime+=dt*10;
+  leftLeg.rotation.x=Math.sin(walkTime)*.55;
+  rightLeg.rotation.x=-Math.sin(walkTime)*.55;
+  leftArm.rotation.x=-Math.sin(walkTime)*.35;
+  rightArm.rotation.x=Math.sin(walkTime)*.35;
+ }else{
+  leftLeg.rotation.x*=.85;rightLeg.rotation.x*=.85;
+  leftArm.rotation.x*=.85;rightArm.rotation.x*=.85;
+ }
+
+ if(!grounded){
+  player.position.y+=verticalSpeed*dt;
+  verticalSpeed-=15*dt;
+  if(player.position.y<=0){
+   player.position.y=0;verticalSpeed=0;grounded=true;
+  }
+ }
+
+ if(attackTime>0){
+  attackTime-=dt;
+  sword.rotation.x=-Math.sin((.35-attackTime)*Math.PI/.35)*1.8;
+ }else sword.rotation.x*=.75;
+
+ const t=clock.elapsedTime;
+ torches.forEach((o,i)=>{
+  o.light.intensity=9+Math.sin(t*7+i)*2;
+  o.flame.scale.y=.9+Math.sin(t*9+i)*.15;
+ });
+
+ updateCamera();
+ updateFPS(dt);
+ renderer.render(scene,camera);
+}
+updateCamera();animate();
+
+addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+localStorage.setItem("rowarior_version","0.2");
+</script>
+</body>
+</html>
