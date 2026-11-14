@@ -1,0 +1,392 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ROWARIOR - The Forgotten Kingdom</title>
+<style>
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#080b12;color:white;font-family:Arial,sans-serif;touch-action:none}
+canvas{display:block}
+#loading{position:fixed;inset:0;z-index:50;background:#080b12;display:grid;place-items:center;font-size:24px}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+.top{position:absolute;top:12px;left:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{background:#111c;color:#fff;border:1px solid #ffffff35;padding:9px 13px;border-radius:12px;font-size:13px;backdrop-filter:blur(8px)}
+button{color:white;background:linear-gradient(135deg,#80602e,#392a19);border:1px solid #d8b56c;border-radius:12px;padding:11px 15px;font-weight:bold;cursor:pointer}
+button:active{transform:scale(.96)}
+.menu{position:absolute;top:12px;right:12px;display:flex;gap:7px;pointer-events:auto}
+#toast{position:absolute;top:75px;left:50%;transform:translateX(-50%);background:#171d27ee;border:1px solid #d9b66c;border-radius:12px;padding:12px 18px;opacity:0;transition:.25s;text-align:center;max-width:90%;font-size:14px}
+#toast.show{opacity:1}
+#centerInfo{position:absolute;top:48%;left:50%;transform:translate(-50%,-50%);text-align:center;text-shadow:0 3px 10px black;max-width:90%}
+#centerInfo h1{font-family:Georgia,serif;letter-spacing:4px;font-size:clamp(26px,6vw,54px);margin:0}
+#centerInfo p{color:#e7d4a7}
+#mobile{position:absolute;bottom:15px;left:15px;right:15px;display:none;justify-content:space-between;align-items:end;pointer-events:none}
+#joy{width:112px;height:112px;border-radius:50%;background:#ffffff20;border:2px solid #ffffff55;position:relative;pointer-events:auto}
+#knob{position:absolute;width:44px;height:44px;border-radius:50%;background:#e5d5b7aa;left:32px;top:32px}
+.actions{display:flex;gap:9px;align-items:end;pointer-events:auto}
+.act{width:58px;height:58px;border-radius:50%;padding:0;background:#17202dcc;border:2px solid #c7b17b;font-size:21px}
+#shift{position:absolute;right:18px;bottom:155px;pointer-events:auto}
+#panel{display:none;position:fixed;z-index:20;inset:0;background:#05080de8;backdrop-filter:blur(10px);padding:18px;overflow:auto}
+.panelbox{max-width:850px;margin:20px auto;background:#141923;border:1px solid #9b7a43;border-radius:18px;padding:20px}
+.panelhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:15px}
+.item{background:#202938;border:1px solid #ffffff20;border-radius:13px;padding:12px;min-height:120px}
+.item .emoji{font-size:32px}
+.item p{font-size:12px;color:#c4c9d2;min-height:28px}
+.item button{width:100%;padding:8px}
+#rotate{display:none;position:fixed;inset:0;z-index:60;background:#080b12;place-items:center;text-align:center;padding:30px}
+@media(orientation:portrait) and (max-width:900px){#rotate{display:grid}}
+@media(max-width:850px){.menu button{padding:9px;font-size:11px}.pill{padding:7px;font-size:11px}#mobile{display:flex}}
+</style>
+</head>
+<body>
+<div id="loading">ROWARIOR<br><small>Đang triệu hồi vương quốc...</small></div>
+<div id="rotate">📱<h2>Hãy xoay điện thoại nằm ngang</h2><p>ROWARIOR được thiết kế để chơi ở chế độ màn hình ngang.</p></div>
+<div id="hud">
+ <div class="top">
+  <div class="pill" id="playerLabel">⚔️ Chiến binh</div>
+  <div class="pill" id="gold">🪙 100</div>
+  <div class="pill" id="health">❤️ 100/100</div>
+  <div class="pill" id="stage">🏰 Sảnh chính</div>
+ </div>
+ <div class="menu">
+  <button onclick="openPanel('inventory')">🎒 Túi đồ</button>
+  <button onclick="openPanel('skins')">🛡️ Trang phục</button>
+  <button onclick="openPanel('shop')">🛒 Cửa hàng</button>
+  <button onclick="openPanel('settings')">⚙️</button>
+ </div>
+ <div id="toast"></div>
+ <div id="centerInfo"><h1>ROWARIOR</h1><p>THE FORGOTTEN KINGDOM</p><p>Khám phá 8 cánh cửa của vương quốc bị lãng quên</p></div>
+ <button id="shift" onclick="toggleLock()">🔒 SHIFT LOCK</button>
+ <div id="mobile">
+  <div id="joy"><div id="knob"></div></div>
+  <div class="actions">
+   <button class="act" onclick="jump()">⬆</button>
+   <button class="act" onclick="crouch()">🧎</button>
+   <button class="act" onclick="attack()">⚔</button>
+   <button class="act" onclick="defend()">🛡</button>
+  </div>
+ </div>
+</div>
+<div id="panel"><div class="panelbox">
+ <div class="panelhead"><h2 id="panelTitle">Túi đồ</h2><button onclick="closePanel()">Đóng ✕</button></div>
+ <div id="panelContent"></div>
+</div></div>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const $=id=>document.getElementById(id);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x101723);
+scene.fog=new THREE.Fog(0x101723,18,65);
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,200);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xb9d4ff,0x292019,2));
+const sun=new THREE.DirectionalLight(0xffd7a0,2.2);
+sun.position.set(8,16,8);sun.castShadow=true;scene.add(sun);
+
+const mat=(color,roughness=.85,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
+const stone=mat(0x55545a),dark=mat(0x242832),gold=mat(0xb58b46,.4,.65),wood=mat(0x49301d),grass=mat(0x426044),sand=mat(0xb59a62),water=mat(0x286b91,.25,.3),leaf=mat(0x31583c);
+const floorMat=mat(0x44434a);
+const cube=(w,h,d,m,x,y,z,parent=scene)=>{let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o};
+const sphere=(r,m,x,y,z,parent=scene)=>{let o=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),m);o.position.set(x,y,z);o.castShadow=true;parent.add(o);return o};
+
+let player, sword, shield, playerYaw=0, locked=false, crouched=false, attacking=false, blocking=false;
+let currentLevel=0, inLevel=false, health=100, goldCount=100, revive=0, chestKey=false;
+let keys={},joyX=0,joyY=0,velocityY=0,grounded=true;
+let mazeWalls=[],chests=[],doors=[],boss=null,decor=[],levelComplete=false;
+let inventory={apple:3,food:2,potion:1,revive:0};
+let unlocked=1;
+let ownedSkins=[0],skin=0;
+const skins=[
+ ['Hiệp sĩ cổ đại','🛡️',0xb9b9b9,0],
+ ['Chiến binh hoàng kim','👑',0xd5a23b,150],
+ ['Kỵ sĩ bóng đêm','🌑',0x282b45,250],
+ ['Sát thủ huyết nguyệt','🩸',0x791f32,350],
+ ['Pháp sư băng giá','❄️',0x69b9dc,450],
+ ['Vệ binh rừng xanh','🌿',0x38754c,550],
+ ['Hoàng đế rồng','🐉',0x8c4b25,800],
+ ['Thần hộ mệnh','✨',0xd8c8ff,1200],
+ ['Ác thần vực sâu','🔥',0x401b52,1800]
+];
+const levels=[
+ ['Rừng cổ đại',0x294b32,grass,0x203a29],
+ ['Bờ biển',0x2a7590,sand,0x174d6b],
+ ['Vùng đất cát',0xb69a64,sand,0x8d754b],
+ ['Thành phố trung cổ',0x55505a,stone,0x302d37],
+ ['Ruộng ngô',0x8b8534,grass,0x56501e],
+ ['Rừng ánh sáng',0x75a96a,grass,0x416c43],
+ ['Lâu đài ma mị',0x29213c,dark,0x171325],
+ ['Đỉnh lâu đài bí ẩn',0x171322,dark,0x090811]
+];
+function notify(t){let e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>e.classList.remove('show'),2400)}
+function updateHUD(){
+ $('gold').textContent='🪙 '+goldCount;
+ $('health').textContent='❤️ '+health+'/100';
+ $('stage').textContent=inLevel?'🗝️ Màn '+(currentLevel+1)+': '+levels[currentLevel][0]:'🏰 Sảnh chính';
+ $('playerLabel').textContent='⚔️ '+(localStorage.rwName||'Chiến binh');
+}
+function makePlayer(){
+ player=new THREE.Group();
+ const bodymat=mat(skins[skin][2],.48,.25);
+ let torso=new THREE.Mesh(new THREE.BoxGeometry(.65,.85,.38),bodymat);torso.position.y=1.35;torso.castShadow=true;player.add(torso);
+ let head=new THREE.Mesh(new THREE.SphereGeometry(.23,20,16),mat(0xc49b79));head.position.y=2;player.add(head);
+ let helmet=new THREE.Mesh(new THREE.SphereGeometry(.27,16,12,0,Math.PI*2,0,Math.PI/2),gold);helmet.position.y=2.08;player.add(helmet);
+ let armMat=bodymat;
+ for(let x of [-.48,.48]){
+  let arm=cube(.2,.72,.22,armMat,x,1.35,0,player);arm.name='arm';
+  let hand=sphere(.13,mat(0xb78e6d),x,1.0,0,player);
+ }
+ for(let x of [-.2,.2]){
+  let leg=cube(.23,.72,.27,dark,x,.42,0,player);leg.name='leg';
+ }
+ sword=new THREE.Group();
+ let blade=cube(.09,.95,.045,mat(0xdce5ed,.2,.8),0,.65,0,sword);
+ let guard=cube(.48,.08,.13,gold,0,.18,0,sword);
+ let grip=cube(.12,.3,.12,wood,0,.02,0,sword);
+ sword.position.set(.55,1.1,-.15);player.add(sword);
+ shield=new THREE.Group();
+ let sh=cube(.62,.8,.12,gold,0,0,0,shield);
+ let center=sphere(.15,mat(0x4d83aa,.3,.6),0,0,.08,shield);
+ shield.position.set(-.55,1.35,-.1);player.add(shield);
+ scene.add(player);
+}
+function clearWorld(){
+ for(let o of [...decor,...mazeWalls,chests,doors])scene.remove(o);
+ if(boss)scene.remove(boss);
+ decor=[];mazeWalls=[];chests=[];doors=[];boss=null;
+}
+function buildLobby(){
+ clearWorld();inLevel=false;scene.background=new THREE.Color(0x101723);scene.fog=new THREE.Fog(0x101723,20,75);
+ cube(60,1,60,stone,0,-.6,0);
+ for(let x of [-13,13]){cube(1,12,55,dark,x,5,0);for(let z=-22;z<=22;z+=11){cube(2,14,2,stone,x,5,z)}}
+ cube(60,1,3,dark,0,11,0);
+ for(let i=0;i<8;i++){
+  let x=(i-3.5)*5.2;
+  cube(3.5,5,.8,wood,x,2.3,-19);
+  cube(3.9,.3,1,gold,x,4.9,-19);
+  cube(.22,5,.3,gold,x-1.7,2.3,-18.5);
+  cube(.22,5,.3,gold,x+1.7,2.3,-18.5);
+  let glow=sphere(.25,mat(0xffb34e,.3),x,5.8,-18.5);
+  let light=new THREE.PointLight(0xffa64d,2,10);light.position.set(x,5.8,-18);scene.add(light);decor.push(glow,light);
+  let label=sphere(.01,mat(0xffffff),x,3,-18.3);decor.push(label);
+ }
+ for(let z=-15;z<20;z+=5)for(let x=-10;x<11;x+=5)cube(.12,.1,.12,gold,x,.02,z);
+ let title=cube(13,3,.5,dark,0,7,-25);decor.push(title);
+ makePlayer();player.position.set(0,0,7);playerYaw=0;
+ $('centerInfo').style.display='block';
+ notify('Chào mừng đến ROWARIOR! Hãy chọn một cánh cửa.');
+ updateHUD();
+}
+function tree(x,z,bright=false){
+ let trunk=cube(.5,2,.5,wood,x,1,z);
+ for(let i=0;i<4;i++)sphere(1.2-i*.13,bright?mat(0x76a66c):leaf,x+(Math.random()-.5)*.3,2.1+i*.55,z);
+ decor.push(trunk);
+}
+function makeMaze(){
+ const N=15,cell=2.3,grid=Array.from({length:N},()=>Array(N).fill(1));
+ function carve(x,z){
+  grid[z][x]=0;
+  let dirs=[[2,0],[-2,0],[0,2],[0,-2]].sort(()=>Math.random()-.5);
+  for(let [dx,dz] of dirs){let nx=x+dx,nz=z+dz;if(nx>0&&nz>0&&nx<N-1&&nz<N-1&&grid[nz][nx]){grid[z+dz/2][x+dx/2]=0;carve(nx,nz)}}
+ }
+ carve(1,1);grid[N-2][N-2]=0;grid[N-2][N-3]=0;
+ let ox=-(N*cell)/2,oz=-(N*cell)/2;
+ for(let z=0;z<N;z++)for(let x=0;x<N;x++){
+  if(grid[z][x])mazeWalls.push(cube(cell,2.5,cell,stone,ox+x*cell,1.25,oz+z*cell));
+ }
+ cube(N*cell,.5,N*cell,levels[currentLevel][2],0,-.3,0);
+ player.position.set(ox+cell,0,oz+cell);playerYaw=0;
+ // Boss on raised platform near the far end
+ cube(7,1,7,dark,ox+(N-2)*cell,1,oz+(N-2)*cell);
+ boss=new THREE.Group();
+ let bm=mat(currentLevel===7?0x7d1d9b:0x743b38,.5,.2);
+ let torso=cube(1.8,2.6,1.2,bm,0,1.8,0,boss);
+ sphere(.65,bm,0,3.35,0,boss);
+ for(let x of [-1.25,1.25])cube(.45,2,.5,bm,x,1.8,0,boss);
+ let eye=mat(0xff2020,.2,0);
+ sphere(.12,eye,-.23,3.4,.55,boss);sphere(.12,eye,.23,3.4,.55,boss);
+ boss.position.set(ox+(N-2)*cell,1.5,oz+(N-2)*cell);scene.add(boss);
+ // Chest chamber at the end, with five chests
+ let roomX=ox+(N-2)*cell,roomZ=oz+(N-5)*cell;
+ cube(12,.5,8,dark,roomX,0,roomZ);
+ for(let i=0;i<5;i++){
+  let chest=cube(1.2,.8,1,wood,roomX+(i-2)*2,0.65,roomZ);
+  cube(1.25,.16,1.05,gold,chest.position.x,1.05,roomZ);
+  chest.userData={key:i===Math.floor(Math.random()*5),opened:false};
+  chests.push(chest);
+ }
+ // secret exit door beyond the room
+ let exit=cube(3.5,4,.5,gold,roomX,2,roomZ-5);
+ doors.push(exit);
+}
+function buildLevel(n){
+ currentLevel=n;inLevel=true;levelComplete=false;chestKey=false;clearWorld();
+ let cfg=levels[n];scene.background=new THREE.Color(cfg[1]);scene.fog=new THREE.Fog(cfg[1],15,60);
+ cube(70,.6,70,cfg[2],0,-.5,0);
+ if(n===0||n===5){for(let i=0;i<55;i++)tree((Math.random()-.5)*65,(Math.random()-.5)*65,n===5)}
+ if(n===1){for(let i=0;i<12;i++){let o=cube(3,.3,2,water,(Math.random()-.5)*50,.05,(Math.random()-.5)*50);decor.push(o)}}
+ if(n===2){for(let i=0;i<25;i++)cube(2,Math.random()*1.5,2,sand,(Math.random()-.5)*60,.4,(Math.random()-.5)*60)}
+ if(n===3||n===6||n===7){for(let i=0;i<12;i++){let x=(Math.random()-.5)*55,z=(Math.random()-.5)*55;cube(4,Math.random()*5+3,4,stone,x,2,z)}}
+ if(n===4){for(let i=0;i<35;i++)for(let j=-1;j<=1;j++)cube(.25,2.5,.25,mat(0x8c852e),(Math.random()-.5)*55,1,(Math.random()-.5)*55)}
+ makeMaze();
+ makePlayer();
+ // Reposition player after makeMaze
+ let N=15,cell=2.3,ox=-(N*cell)/2,oz=-(N*cell)/2;
+ player.position.set(ox+cell,0,oz+cell);
+ $('centerInfo').style.display='none';
+ updateHUD();
+ notify('Màn '+(n+1)+': '+cfg[0]+' — hãy tìm đường qua mê cung!');
+}
+function openDoor(n){
+ if(n>=unlocked){notify('Cánh cửa này chưa được mở khóa!');return}
+ buildLevel(n);
+}
+function openPanel(type){
+ $('panel').style.display='block';
+ const c=$('panelContent');let html='';
+ if(type==='inventory'){
+  $('panelTitle').textContent='🎒 Túi vật phẩm';
+  let items=[['apple','🍎','Táo hồi máu','Hồi 25 máu'],['food','🍖','Thức ăn','Hồi 40 máu'],['potion','🧪','Bình hồi phục','Hồi đầy máu'],['revive','💠','Bảo hiểm hồi sinh','Hồi sinh một lần khi bị boss hạ']];
+  html='<div class="cards">'+items.map(a=>`<div class="item"><div class="emoji">${a[1]}</div><b>${a[2]}</b><p>${a[3]} · Số lượng: ${inventory[a[0]]}</p><button onclick="useItem('${a[0]}')">Sử dụng</button></div>`).join('')+'</div>';
+ }
+ if(type==='skins'){
+  $('panelTitle').textContent='🛡️ Bộ sưu tập trang phục';
+  html='<div class="cards">'+skins.map((s,i)=>`<div class="item"><div class="emoji">${s[1]}</div><b>${s[0]}</b><p>${ownedSkins.includes(i)?'Đã sở hữu':s[3]+' vàng'}</p><button onclick="chooseSkin(${i})">${skin===i?'Đang mặc':ownedSkins.includes(i)?'Trang bị':'Mua trang phục'}</button></div>`).join('')+'</div>';
+ }
+ if(type==='shop'){
+  $('panelTitle').textContent='🛒 Cửa hàng vật phẩm';
+  let goods=[['apple','🍎','Táo hồi máu',20],['food','🍖','Thức ăn',35],['potion','🧪','Bình hồi phục',60],['revive','💠','Bảo hiểm hồi sinh',120]];
+  html='<p>Vàng hiện có: 🪙 '+goldCount+'</p><div class="cards">'+goods.map(a=>`<div class="item"><div class="emoji">${a[1]}</div><b>${a[2]}</b><p>Giá: ${a[3]} vàng</p><button onclick="buyItem('${a[0]}',${a[3]})">Mua</button></div>`).join('')+'</div><p style="color:#aaa;font-size:12px">Đây là cửa hàng mô phỏng bằng tiền trong game, chưa có thanh toán thật.</p>';
+ }
+ if(type==='settings'){
+  $('panelTitle').textContent='⚙️ Cài đặt';
+  html=`<p>Tên chiến binh</p><input id="nameInput" value="${localStorage.rwName||'Chiến binh'}" maxlength="18" style="padding:12px;border-radius:8px;width:100%"><br><br><button onclick="saveName()">Lưu tên</button> <button onclick="toggleLock()">Bật/tắt Shift Lock</button><p>Đồ họa</p><button onclick="setQuality(1)">Thấp</button> <button onclick="setQuality(1.5)">Cân bằng</button> <button onclick="setQuality(2)">Cao</button><p>Tiến trình: mở khóa ${unlocked}/8 màn.</p>`;
+ }
+ c.innerHTML=html;
+}
+function closePanel(){$('panel').style.display='none'}
+window.openPanel=openPanel;window.closePanel=closePanel;
+window.useItem=(id)=>{
+ if(inventory[id]<=0){notify('Bạn không còn vật phẩm này!');return}
+ if(id==='revive'){notify('Bảo hiểm hồi sinh sẽ tự kích hoạt khi bị boss hạ.');return}
+ if(id==='apple')health=Math.min(100,health+25);
+ if(id==='food')health=Math.min(100,health+40);
+ if(id==='potion')health=100;
+ inventory[id]--;updateHUD();notify('Đã sử dụng vật phẩm! Máu hiện tại: '+health);openPanel('inventory');
+};
+window.buyItem=(id,price)=>{
+ if(goldCount<price){notify('Không đủ vàng!');return}
+ goldCount-=price;inventory[id]++;updateHUD();notify('Mua thành công! Đã nhận vật phẩm.');openPanel('shop');
+};
+window.chooseSkin=(i)=>{
+ if(!ownedSkins.includes(i)){
+  if(goldCount<skins[i][3]){notify('Bạn chưa đủ vàng mua trang phục!');return}
+  goldCount-=skins[i][3];ownedSkins.push(i);notify('Đã mua trang phục '+skins[i][0]+'!');
+ }else notify('Đã trang bị '+skins[i][0]+'!');
+ skin=i;updateHUD();openPanel('skins');
+};
+window.saveName=()=>{localStorage.rwName=$('nameInput').value.trim()||'Chiến binh';updateHUD();notify('Đã cập nhật tên chiến binh!')};
+window.setQuality=(v)=>{renderer.setPixelRatio(Math.min(devicePixelRatio,v));notify('Đã đổi chất lượng đồ họa')};
+window.toggleLock=()=>{locked=!locked;notify(locked?'Shift Lock đã bật':'Shift Lock đã tắt')};
+window.jump=()=>{if(grounded){velocityY=7;grounded=false}};
+window.crouch=()=>{crouched=!crouched;player.scale.y=crouched?.7:1;notify(crouched?'Đã ngồi xuống':'Đã đứng lên')};
+window.attack=()=>{
+ if(!player)return;attacking=true;sword.rotation.z=-1.2;setTimeout(()=>{sword.rotation.z=0;attacking=false},250);
+ if(boss&&player.position.distanceTo(boss.position)<5){boss.userData.hp=(boss.userData.hp||0)+1;if(boss.userData.hp>=5){scene.remove(boss);boss=null;notify('Boss đã bị đánh bại! Hãy tìm phòng kho báu.')}else notify('Đã đánh trúng boss!')}
+};
+window.defend=()=>{blocking=true;shield.rotation.y=-.7;notify('Đang giơ khiên phòng thủ');setTimeout(()=>{blocking=false;shield.rotation.y=0},900)};
+function damage(){
+ if(blocking){notify('Khiên đã đỡ đòn!');return}
+ health-=25;
+ if(health<=0){
+  if(inventory.revive>0){inventory.revive--;health=100;notify('Bảo hiểm đã kích hoạt! Bạn được hồi sinh một lần.')}
+  else{health=0;notify('Bạn đã bị hạ gục! Trở về sảnh.');setTimeout(buildLobby,1300)}
+ }
+ updateHUD();
+}
+function tryChest(){
+ for(let ch of chests)if(!ch.userData.opened&&player.position.distanceTo(ch.position)<2.4){
+  ch.userData.opened=true;ch.rotation.x=-.5;
+  if(ch.userData.key){chestKey=true;notify('✨ Tìm thấy VẬT PHẨM BÍ ẨN! Hãy đến cửa bí mật!')}
+  else{goldCount+=30;notify('Rương trống bí mật! Bạn nhận được 30 vàng.')}
+  updateHUD();return;
+ }
+}
+function tryExit(){
+ if(!doors.length)return;
+ let d=doors[0];
+ if(player.position.distanceTo(d.position)<4){
+  if(chestKey){unlocked=Math.max(unlocked,Math.min(8,currentLevel+2));goldCount+=100;notify('🎉 Vượt màn thành công! +100 vàng');setTimeout(buildLobby,1400)}
+  else notify('Cửa bí mật đang khóa. Hãy tìm vật phẩm bí ẩn trong một chiếc rương!');
+ }
+}
+function interact(){
+ if(!inLevel){
+  for(let i=0;i<8;i++){
+   let x=(i-3.5)*5.2;
+   if(Math.abs(player.position.x-x)<2.5&&Math.abs(player.position.z+19)<4){openDoor(i);return}
+  }
+  notify('Hãy đến gần một trong 8 cánh cửa rồi nhấn E.');return;
+ }
+ tryChest();tryExit();
+}
+function keydown(e){keys[e.key.toLowerCase()]=true;if(e.key===' '){jump()}if(e.key.toLowerCase()==='e')interact();if(e.key.toLowerCase()==='f')attack();if(e.key.toLowerCase()==='q')defend();if(e.key.toLowerCase()==='c')crouch()}
+function keyup(e){keys[e.key.toLowerCase()]=false}
+addEventListener('keydown',keydown);addEventListener('keyup',keyup);
+let dragging=false,lastX=0,lastY=0,cameraYaw=0;
+renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY});
+addEventListener('pointerup',()=>dragging=false);
+addEventListener('pointermove',e=>{if(dragging&&!locked){cameraYaw-=(e.clientX-lastX)*.005;lastX=e.clientX;lastY=e.clientY}});
+const joy=$('joy'),knob=$('knob');let joyActive=false;
+joy.addEventListener('pointerdown',e=>{joyActive=true;joy.setPointerCapture(e.pointerId);moveJoy(e)});
+joy.addEventListener('pointermove',e=>{if(joyActive)moveJoy(e)});
+joy.addEventListener('pointerup',()=>{joyActive=false;joyX=joyY=0;knob.style.transform='translate(0,0)'});
+function moveJoy(e){let r=joy.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.hypot(dx,dy),k=Math.min(1,45/(len||1));joyX=dx*k/45;joyY=dy*k/45;knob.style.transform=`translate(${joyX*38}px,${joyY*38}px)`}
+function update(dt){
+ if(!player)return;
+ let forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joyY;
+ let side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joyX;
+ let moving=Math.hypot(forward,side)>.08;
+ let yaw=locked?cameraYaw:playerYaw;
+ let dx=(Math.sin(yaw)*forward+Math.cos(yaw)*side)*5*dt;
+ let dz=(-Math.cos(yaw)*forward+Math.sin(yaw)*side)*5*dt;
+ let nx=player.position.x+dx,nz=player.position.z+dz;
+ let blocked=mazeWalls.some(w=>Math.abs(nx-w.position.x)<1.25&&Math.abs(nz-w.position.z)<1.25);
+ if(!blocked){player.position.x=nx;player.position.z=nz}
+ if(moving){player.rotation.y=locked?cameraYaw:Math.atan2(dx,dz);player.children.forEach(o=>{if(o.name==='leg')o.rotation.x=Math.sin(performance.now()*.012)*(o.position.x>0?1:-1)*.55;if(o.name==='arm')o.rotation.x=Math.sin(performance.now()*.012)*.35})}
+ if(!grounded){velocityY-=18*dt;player.position.y+=velocityY*dt;if(player.position.y<=0){player.position.y=0;velocityY=0;grounded=true}}
+ if(locked)cameraYaw=player.rotation.y;
+ if(inLevel&&boss&&player.position.distanceTo(boss.position)<5&&Math.random()<.003)damage();
+ if(inLevel&&player.position.distanceTo(boss?.position||new THREE.Vector3(999,0,999))>5&&boss&&Math.random()<.0008)notify('Boss đang canh giữ mê cung!');
+ let target=new THREE.Vector3(player.position.x+Math.sin(cameraYaw)*8,player.position.y+5,player.position.z+Math.cos(cameraYaw)*8);
+ if(locked){target.set(player.position.x+Math.sin(cameraYaw)*7,player.position.y+3.5,player.position.z+Math.cos(cameraYaw)*7)}
+ camera.position.lerp(target,.12);
+ camera.lookAt(player.position.x,player.position.y+1.2,player.position.z);
+}
+let last=performance.now();
+function animate(now){
+ requestAnimationFrame(animate);
+ let dt=Math.min((now-last)/1000,.04);last=now;
+ update(dt);
+ renderer.render(scene,camera);
+}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+buildLobby();
+$('loading').style.display='none';
+requestAnimationFrame(animate);
+setInterval(()=>{let day=new Date().toDateString();if(localStorage.rwDaily!==day){localStorage.rwDaily=day;inventory.revive+=1;notify('🎁 Quà đăng nhập: nhận 1 bảo hiểm hồi sinh!') }},3000);
+setInterval(()=>{if(boss&&inLevel&&player.position.distanceTo(boss.position)<4)damage()},6000);
+</script>
+</body>
+</html>
