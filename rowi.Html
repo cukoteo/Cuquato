@@ -1,0 +1,576 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ROWARIOR - Forgotten Kingdom</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#09090d;color:#eee;font-family:Georgia,serif;touch-action:none}
+#game{position:fixed;inset:0}
+#game canvas{display:block}
+#hud{position:fixed;inset:0;pointer-events:none}
+.panel{background:linear-gradient(145deg,#24232aeF,#090a0fee);border:1px solid #927344aa;box-shadow:0 5px 20px #0009}
+#brand{position:absolute;top:14px;left:16px;padding:10px 14px;border-left:3px solid #c29a59}
+#brand b{font-size:21px;letter-spacing:4px;color:#e8c58a}
+#brand small{display:block;font:9px Arial;letter-spacing:2px;color:#aaa;margin-top:4px}
+#profile{position:absolute;right:14px;top:14px;padding:8px 11px;display:flex;gap:8px;align-items:center;pointer-events:auto}
+#avatar{width:34px;height:34px;border:1px solid #b99660;border-radius:50%;display:grid;place-items:center}
+#playerName{width:105px;background:transparent;color:#f1dfbc;border:0;border-bottom:1px solid #8f754d;padding:5px;outline:none}
+#level{font:9px Arial;color:#b6a78d}
+#help{position:absolute;right:15px;top:75px;text-align:right;font:10px/1.8 Arial;color:#c5b89f;text-shadow:0 2px 5px #000}
+#qualityBox{position:absolute;right:15px;top:135px;padding:7px 9px;pointer-events:auto;font:10px Arial}
+select{background:#17171b;color:#ead9b8;border:1px solid #987748;padding:5px}
+#leftMenu{position:absolute;left:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+.menuBtn{background:linear-gradient(145deg,#35312b,#111216);border:1px solid #927448;color:#e5d4b4;padding:9px 12px;min-width:135px;text-align:left;font:10px Arial;box-shadow:0 3px 9px #0008}
+#bottom{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:7px;pointer-events:auto}
+.action{background:linear-gradient(145deg,#383128,#111216);border:1px solid #a08456;color:#e9d9ba;padding:10px 13px;min-width:85px;font:10px Arial;letter-spacing:1px}
+.action.primary{background:linear-gradient(145deg,#a47b40,#493018);border-color:#e3bd79;color:#fff0d0;min-width:135px}
+#fps{position:absolute;right:8px;bottom:3px;color:#b7a27d;font:9px Arial}
+#heroName{position:absolute;left:50%;top:73%;transform:translateX(-50%);text-align:center;text-shadow:0 3px 8px #000;white-space:nowrap}
+#heroName b{font-size:14px;letter-spacing:3px;color:#e5c58e}
+#heroName small{display:block;font:9px Arial;color:#c6bba5;margin-top:5px}
+#mobileControls{position:fixed;inset:0;pointer-events:none}
+#joy{position:absolute;bottom:18px;left:18px;width:98px;height:98px;border-radius:50%;border:2px solid #a68b61;background:radial-gradient(circle,#36312b99,#08090de8);box-shadow:0 5px 16px #000a,inset 0 0 14px #000;pointer-events:auto;touch-action:none}
+#stick{position:absolute;left:28px;top:28px;width:38px;height:38px;border-radius:50%;background:linear-gradient(145deg,#ddc79e,#705333);border:2px solid #ead5a9;box-shadow:0 3px 8px #000a}
+.control{position:absolute;right:18px;width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,#514638,#121116);color:#f0dfbd;border:2px solid #b59a6e;box-shadow:0 4px 12px #000a;font:10px Arial;pointer-events:auto;touch-action:none}
+#jump{bottom:82px;right:78px}
+#crouch{bottom:17px;right:78px}
+#attack{bottom:20px;right:17px}
+#shiftLock{position:fixed;right:18px;bottom:145px;width:49px;height:49px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:#e8d6b5;background:linear-gradient(145deg,#494137,#111216);border:2px solid #a58a60;box-shadow:0 4px 13px #000b;pointer-events:auto;touch-action:manipulation}
+#shiftLock span{font-size:19px}
+#shiftLock small{font:8px Arial;letter-spacing:1px}
+#shiftLock.active{color:#fff0c7;border-color:#f0c477;background:linear-gradient(145deg,#96703d,#342315);box-shadow:0 0 15px #d69c4b88}
+#cameraTouch{position:absolute;inset:0 0 120px 125px;pointer-events:auto;touch-action:none}
+#modal{display:none;position:fixed;inset:0;z-index:20;background:#000c;align-items:center;justify-content:center;padding:14px;pointer-events:auto}
+#modal.show{display:flex}
+#modalCard{width:min(430px,94vw);max-height:90vh;overflow:auto;padding:20px;background:linear-gradient(145deg,#28241e,#0a0b0f);border:1px solid #aa8754;color:#e8ddc5}
+#modalCard h2{font-size:20px;letter-spacing:2px;color:#e6c58e}
+#modalCard p{font:12px/1.6 Arial;color:#c6bdad}
+.modalInput{width:100%;padding:11px;margin:5px 0 12px;background:#0c0e12;border:1px solid #826a47;color:#f0dfbd}
+.modalRow{display:flex;gap:8px;justify-content:flex-end;margin-top:15px}
+#rotate{display:none;position:fixed;inset:0;z-index:50;background:#08090c;align-items:center;justify-content:center;text-align:center;padding:25px}
+@media(orientation:portrait) and (max-width:800px){#rotate{display:flex}}
+@media(pointer:coarse){#help{display:none}}
+@media(max-height:430px){
+ #brand{top:6px;left:8px;padding:6px}
+ #brand b{font-size:16px}
+ #profile{top:6px;right:7px}
+ #qualityBox{top:55px;right:7px}
+ #leftMenu{left:7px;bottom:5px}
+ #bottom{bottom:5px}
+ #heroName{top:69%}
+ #joy{width:85px;height:85px;bottom:8px;left:9px}
+ #stick{left:22px;top:22px}
+ #shiftLock{bottom:115px;right:12px}
+ #jump{bottom:65px}
+ #crouch{bottom:7px}
+ #attack{bottom:9px}
+}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<div id="hud">
+ <div id="brand" class="panel"><b>ROWARIOR</b><small>THE FORGOTTEN KINGDOM</small></div>
+ <div id="profile" class="panel">
+  <div id="avatar">♜</div>
+  <div><div id="level">CHIẾN BINH · CẤP 01</div><input id="playerName" maxlength="18" value="Chiến binh"></div>
+ </div>
+ <div id="help">WASD: DI CHUYỂN<br>CHUỘT: XOAY CAMERA<br>SPACE: NHẢY · C: NGỒI<br>SHIFT: CHẠY · SHIFT LOCK: KHÓA SAU LƯNG</div>
+ <div id="qualityBox" class="panel">ĐỒ HỌA
+  <select id="quality"><option value="low">LOW</option><option value="balanced">BALANCED</option><option value="high">HIGH</option></select>
+ </div>
+ <div id="heroName"><b id="heroTitle">CHIẾN BINH VÔ DANH</b><small>KẺ LANG THANG GIỮA VƯƠNG QUỐC LÃNG QUÊN</small></div>
+ <div id="leftMenu">
+  <button class="menuBtn" data-door="0">✦ TRANG PHỤC</button>
+  <button class="menuBtn" data-door="1">✦ KỸ NĂNG</button>
+  <button class="menuBtn" id="roomMenu">✦ PHÒNG & BẠN BÈ</button>
+  <button class="menuBtn" data-door="3">✦ NHÀ PHÁT TRIỂN</button>
+  <button class="menuBtn" id="settingsMenu">⚙ CÀI ĐẶT</button>
+ </div>
+ <div id="bottom">
+  <button class="action" id="fullscreen">TOÀN MÀN HÌNH</button>
+  <button class="action primary" data-door="2">CHỌN MÀN CHƠI</button>
+  <button class="action" id="quickRoom">TẠO PHÒNG</button>
+ </div>
+ <div id="fps">ROWARIOR · LOBBY</div>
+</div>
+
+<div id="mobileControls">
+ <div id="cameraTouch"></div>
+ <div id="joy"><div id="stick"></div></div>
+ <button class="control" id="jump">NHẢY</button>
+ <button class="control" id="crouch">NGỒI</button>
+ <button class="control" id="attack">ĐÁNH</button>
+ <button id="shiftLock" title="Bật/tắt Shift Lock"><span>◎</span><small>LOCK</small></button>
+</div>
+
+<div id="rotate"><div><div style="font-size:48px">⟳</div><h2>ROWARIOR</h2><p>Hãy xoay ngang thiết bị để bước vào lâu đài.</p><button class="action primary" id="tryRotate">THỬ XOAY NGANG</button></div></div>
+
+<div id="modal"><div id="modalCard">
+ <div style="font:9px Arial;letter-spacing:3px;color:#a88b5e">ROWARIOR · FORGOTTEN KINGDOM</div>
+ <h2 id="modalTitle">ĐẠI SẢNH</h2><div id="modalBody"></div>
+ <div class="modalRow"><button class="action" id="modalClose">ĐÓNG</button></div>
+</div></div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from "three";
+
+const $=id=>document.getElementById(id);
+const mobile=matchMedia("(pointer:coarse)").matches;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x111016);
+scene.fog=new THREE.FogExp2(0x111016,.024);
+
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,100);
+const renderer=new THREE.WebGLRenderer({antialias:!mobile,powerPreference:"high-performance"});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.3));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
+renderer.shadowMap.enabled=false;
+$("game").appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xb5b6c8,0x211811,1.45));
+const moon=new THREE.DirectionalLight(0xe0d1b4,1.5);
+moon.position.set(-8,14,9);
+scene.add(moon);
+
+const stone=new THREE.MeshStandardMaterial({color:0x49464a,roughness:.96});
+const darkStone=new THREE.MeshStandardMaterial({color:0x252329,roughness:1});
+const edgeStone=new THREE.MeshStandardMaterial({color:0x69605a,roughness:.9});
+const iron=new THREE.MeshStandardMaterial({color:0x333941,metalness:.75,roughness:.4});
+const silver=new THREE.MeshStandardMaterial({color:0xa1a3a3,metalness:.8,roughness:.32});
+const gold=new THREE.MeshStandardMaterial({color:0xa47b42,metalness:.7,roughness:.35});
+const cloth=new THREE.MeshStandardMaterial({color:0x17131a,roughness:1});
+
+function addBox(parent,x,y,z,w,h,d,mat){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+ m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+}
+function addCylinder(parent,x,y,z,rt,rb,h,mat,n=8){
+ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,n),mat);
+ m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m;
+}
+
+/* SẢNH ĐÁ CỔ */
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(50,50),new THREE.MeshStandardMaterial({color:0x29272a,roughness:1}));
+floor.rotation.x=-Math.PI/2;floor.position.y=-.08;scene.add(floor);
+
+for(let x=-6;x<=6;x++)for(let z=-6;z<=6;z++){
+ const tile=addBox(scene,x*1.8,-.02,z*1.8,1.76,.1,1.76,(x+z)%2?stone:darkStone);
+ tile.rotation.y=((x*7+z*3)%4)*.006;
+}
+for(let z=-12;z<=12;z+=6){
+ for(const x of [-11,11]){
+  addBox(scene,x,4.5,z,1.5,9,1.5,stone);
+  addBox(scene,x,9,z,2,.45,2,edgeStone);
+  addBox(scene,x,9.35,z,1.7,.25,1.7,gold);
+ }
+}
+addBox(scene,-13,5,0,1,10,28,darkStone);
+addBox(scene,13,5,0,1,10,28,darkStone);
+addBox(scene,0,5,-14,27,10,1,darkStone);
+addBox(scene,0,10,0,27,.7,29,darkStone);
+
+/* Vòm trần và gân đá */
+for(let z=-12;z<=12;z+=6){
+ addBox(scene,0,9.65,z,24,.35,.65,edgeStone);
+ for(const x of [-8,-4,4,8]){
+  addBox(scene,x,8.5,z,.28,2.2,.3,stone);
+ }
+}
+
+/* Cửa sổ vòm tối */
+for(const side of [-1,1]){
+ for(let z=-9;z<=9;z+=6){
+  const arch=new THREE.Mesh(new THREE.TorusGeometry(.8,.12,8,16,Math.PI),gold);
+  arch.position.set(side*12.43,6,z);
+  arch.rotation.y=side*Math.PI/2;
+  scene.add(arch);
+  addBox(scene,side*12.43,5.45,z,.12,1.2,1.5,darkStone);
+ }
+}
+
+/* Đuốc và ánh sáng */
+const torches=[];
+function torch(x,z){
+ addCylinder(scene,x,2.1,z,.09,.14,1.5,gold,8);
+ const flame=new THREE.Mesh(new THREE.IcosahedronGeometry(.23,1),new THREE.MeshBasicMaterial({color:0xff9a43}));
+ flame.position.set(x,3,z);scene.add(flame);
+ const light=new THREE.PointLight(0xff923d,8,9);
+ light.position.set(x,3,z);scene.add(light);
+ torches.push({flame,light});
+}
+for(let z=-12;z<=12;z+=6){torch(-9.7,z);torch(9.7,z)}
+
+/* Bậc thềm, bục và tượng trang trí */
+for(const side of [-1,1]){
+ addBox(scene,side*7,.2,-7,3,.4,3,edgeStone);
+ addBox(scene,side*7,.55,-7,2.3,.35,2.3,darkStone);
+ const statue=new THREE.Group();statue.position.set(side*7,0,-7);scene.add(statue);
+ addCylinder(statue,0,1.2,0,.5,.65,1.5,stone,8);
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.42,10,8),iron);
+ head.position.y=2.2;statue.add(head);
+ addBox(statue,0,2.7,0,.15,.9,.15,gold);
+}
+for(let i=0;i<28;i++){
+ const x=Math.sin(i*17.3)*11;
+ const z=Math.cos(i*9.1)*12;
+ const rubble=addBox(scene,x,.08,z,.25+Math.random()*.55,.14,.25+Math.random()*.4,edgeStone);
+ rubble.rotation.y=Math.random()*3;
+}
+
+/* CỬA TRANG TRÍ */
+const doorInfo=[
+ ["KHO TRANG PHỤC","Khu vực trang phục và giáp chiến binh."],
+ ["KỸ NĂNG","Khu vực kỹ năng nhân vật."],
+ ["CHỌN MÀN CHƠI","Khu vực màn chơi sẽ được thiết kế sau."],
+ ["NHÀ PHÁT TRIỂN","ROWARIOR – THE FORGOTTEN KINGDOM."],
+ ["PHÒNG & BẠN BÈ","Tạo phòng riêng và mời tối đa 4 người."]
+];
+const doorGroups=[];
+function makeDoor(x,z,i,rot=0){
+ const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);
+ const mat=i===0?gold:stone;
+ addBox(g,-1.45,2.4,0,.35,4.8,.65,mat);
+ addBox(g,1.45,2.4,0,.35,4.8,.65,mat);
+ addBox(g,0,4.75,0,3.2,.4,.7,mat);
+ addBox(g,0,2.35,-.2,2.6,4.2,.3,darkStone);
+ for(let px=-.85;px<=.86;px+=.85)addBox(g,px,2.3,-.01,.07,4,.07,iron);
+ const arch=new THREE.Mesh(new THREE.TorusGeometry(.48,.07,7,16,Math.PI),gold);
+ arch.position.set(0,4.5,-.1);arch.rotation.z=Math.PI;g.add(arch);
+ if(i!==0){
+  for(let s of [-1,1])for(let k=0;k<6;k++){
+   const link=new THREE.Mesh(new THREE.TorusGeometry(.11,.035,5,8),iron);
+   link.position.set(s*.5,3.5-k*.35,-.38);link.rotation.y=Math.PI/2;g.add(link);
+  }
+  addBox(g,0,2,-.42,.4,.45,.12,gold);
+ }else{
+  const glow=new THREE.PointLight(0xffb85b,5,7);glow.position.set(0,3,-1);g.add(glow);
+ }
+ doorGroups.push(g);
+}
+makeDoor(0,-13,0);
+makeDoor(-10.8,-5,1,Math.PI/2);
+makeDoor(10.8,-5,2,-Math.PI/2);
+makeDoor(-7,12,3,Math.PI);
+makeDoor(7,12,4,Math.PI);
+
+/* NHÂN VẬT 3D */
+const player=new THREE.Group();scene.add(player);
+const body=new THREE.Group();player.add(body);
+const legs=[];
+const arms=[];
+
+for(const side of [-1,1]){
+ const hip=new THREE.Group();hip.position.set(side*.27,1.18,0);body.add(hip);legs.push(hip);
+ addCylinder(hip,0,-.42,0,.18,.2,.82,iron,8);
+ const knee=new THREE.Mesh(new THREE.SphereGeometry(.19,10,8),silver);
+ knee.position.set(0,-.85,-.02);hip.add(knee);
+ addCylinder(hip,0,-1.12,-.02,.13,.16,.48,silver,8);
+ addBox(hip,0,-1.4,-.13,.36,.17,.46,iron);
+ addBox(hip,0,-.88,-.2,.22,.07,.05,gold);
+
+ const arm=new THREE.Group();arm.position.set(side*.68,2.35,0);body.add(arm);arms.push(arm);
+ addCylinder(arm,0,-.4,0,.16,.2,.78,iron,8);
+ const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),silver);
+ shoulder.position.y=.05;arm.add(shoulder);
+ addCylinder(arm,0,-.83,0,.15,.15,.25,silver,8);
+}
+addCylinder(body,0,1.95,0,.48,.38,1.1,iron,10);
+addBox(body,0,2,-.4,.72,.6,.12,silver);
+addBox(body,0,2,-.49,.07,.9,.04,gold);
+addCylinder(body,0,2.75,0,.19,.19,.3,iron,8);
+
+const helmet=new THREE.Group();helmet.position.set(0,3.25,0);body.add(helmet);
+const helm=new THREE.Mesh(new THREE.SphereGeometry(.37,12,10,0,Math.PI*2,0,Math.PI*.75),silver);
+helm.scale.set(1,1.15,.95);helmet.add(helm);
+addBox(helmet,0,-.1,-.34,.48,.5,.18,iron);
+addBox(helmet,0,-.1,-.45,.34,.07,.04,gold);
+addBox(helmet,0,-.1,-.48,.045,.4,.035,gold);
+const crest=new THREE.Mesh(new THREE.ConeGeometry(.14,.35,5),gold);
+crest.position.y=.43;helmet.add(crest);
+
+const cape=new THREE.Mesh(new THREE.PlaneGeometry(1,1.65,4,5),new THREE.MeshStandardMaterial({color:0x17121a,side:THREE.DoubleSide,roughness:1}));
+cape.position.set(0,1.9,.35);cape.rotation.x=-.12;body.add(cape);
+
+/* Kiếm */
+const sword=new THREE.Group();sword.position.set(.75,1.25,-.6);body.add(sword);
+const blade=new THREE.Mesh(new THREE.BoxGeometry(.12,1.4,.07),silver);blade.position.y=-.5;sword.add(blade);
+addBox(sword,0,.2,0,.58,.1,.12,gold);
+addCylinder(sword,0,-.02,0,.07,.07,.35,cloth,8);
+
+/* Tên nhân vật lưu lại */
+$("playerName").value=localStorage.getItem("rowarior_name")||"Chiến binh";
+function updateName(){
+ localStorage.setItem("rowarior_name",$("playerName").value);
+ $("heroTitle").textContent=($("playerName").value||"Chiến binh vô danh").toUpperCase();
+}
+$("playerName").addEventListener("input",updateName);updateName();
+
+/* ĐIỀU KHIỂN */
+const keys={};
+addEventListener("keydown",e=>{
+ keys[e.key.toLowerCase()]=true;
+ if(e.code==="Space"){e.preventDefault();jump()}
+ if(e.key.toLowerCase()==="c")crouching=!crouching;
+});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+let yaw=0,pitch=.16,drag=false,lastX=0,lastY=0;
+let shiftLock=false;
+$("shiftLock").onclick=()=>{
+ shiftLock=!shiftLock;
+ $("shiftLock").classList.toggle("active",shiftLock);
+ $("shiftLock").innerHTML=shiftLock?"<span>◉</span><small>LOCK ON</small>":"<span>◎</span><small>LOCK</small>";
+};
+renderer.domElement.addEventListener("pointerdown",e=>{
+ if(e.pointerType==="mouse"&&e.button===0){drag=true;lastX=e.clientX;lastY=e.clientY}
+});
+addEventListener("pointerup",()=>drag=false);
+addEventListener("pointermove",e=>{
+ if(!drag)return;
+ yaw-=(e.clientX-lastX)*.005;
+ pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lastY)*.003,-.1,.65);
+ lastX=e.clientX;lastY=e.clientY;
+});
+
+/* Joystick mobile */
+let moveX=0,moveY=0,joyActive=false;
+$("joy").addEventListener("pointerdown",e=>{
+ joyActive=true;$("joy").setPointerCapture(e.pointerId);moveJoy(e);
+});
+$("joy").addEventListener("pointermove",e=>{if(joyActive)moveJoy(e)});
+function moveJoy(e){
+ const r=$("joy").getBoundingClientRect();
+ let dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;
+ const len=Math.hypot(dx,dy),max=29;
+ if(len>max){dx=dx/len*max;dy=dy/len*max}
+ moveX=dx/max;moveY=dy/max;
+ $("stick").style.transform=`translate(${dx}px,${dy}px)`;
+}
+function resetJoy(){joyActive=false;moveX=moveY=0;$("stick").style.transform="translate(0,0)"}
+$("joy").addEventListener("pointerup",resetJoy);
+$("joy").addEventListener("pointercancel",resetJoy);
+
+/* Kéo camera cảm ứng */
+let lookActive=false,lx=0,ly=0;
+$("cameraTouch").addEventListener("pointerdown",e=>{lookActive=true;lx=e.clientX;ly=e.clientY;$("cameraTouch").setPointerCapture(e.pointerId)});
+$("cameraTouch").addEventListener("pointermove",e=>{
+ if(!lookActive)return;
+ yaw-=(e.clientX-lx)*.006;
+ pitch=THREE.MathUtils.clamp(pitch+(e.clientY-ly)*.003,-.1,.65);
+ lx=e.clientX;ly=e.clientY;
+});
+$("cameraTouch").addEventListener("pointerup",()=>lookActive=false);
+$("cameraTouch").addEventListener("pointercancel",()=>lookActive=false);
+
+/* Nhảy, ngồi, đánh */
+let jumpV=0,grounded=true,crouching=false,attackTime=0,walkTime=0;
+function jump(){if(grounded){jumpV=5.5;grounded=false}}
+$("jump").addEventListener("pointerdown",jump);
+$("crouch").addEventListener("pointerdown",()=>crouching=!crouching);
+$("attack").addEventListener("pointerdown",()=>attackTime=.4);
+
+/* Camera góc nhìn thứ ba */
+const target=new THREE.Vector3();
+function updateCamera(){
+ const d=shiftLock?5.4:7;
+ const horizontal=Math.cos(pitch)*d;
+ const shoulder=shiftLock?.55:0;
+ camera.position.set(
+  player.position.x+Math.sin(yaw)*horizontal+Math.cos(yaw)*shoulder,
+  player.position.y+2.6+Math.sin(pitch)*d,
+  player.position.z+Math.cos(yaw)*horizontal-Math.sin(yaw)*shoulder
+ );
+ target.set(player.position.x,player.position.y+2,player.position.z);
+ camera.lookAt(target);
+}
+
+/* Cửa và modal */
+function showModal(title,html){
+ $("modalTitle").textContent=title;$("modalBody").innerHTML=html;$("modal").classList.add("show");
+}
+function closeModal(){$("modal").classList.remove("show")}
+$("modalClose").onclick=closeModal;
+const doors=[
+ ["KHO TRANG PHỤC","Khu vực trang phục và áo giáp."],
+ ["KỸ NĂNG","Khu vực kỹ năng nhân vật."],
+ ["CHỌN MÀN CHƠI","Màn chơi sẽ được thiết kế sau theo ý tưởng của bạn."],
+ ["NHÀ PHÁT TRIỂN","ROWARIOR – THE FORGOTTEN KINGDOM."],
+ ["PHÒNG & BẠN BÈ","Tạo phòng riêng và mời tối đa 4 người."]
+];
+document.querySelectorAll("[data-door]").forEach(b=>b.onclick=()=>{
+ const i=Number(b.dataset.door);
+ showModal(doors[i][0],`<p>${doors[i][1]}</p>`);
+});
+
+/* Phòng demo cục bộ - chưa online */
+function getRooms(){try{return JSON.parse(localStorage.getItem("rowarior_rooms")||"{}")}catch{return {}}}
+function saveRooms(r){localStorage.setItem("rowarior_rooms",JSON.stringify(r))}
+function roomMenu(){
+ showModal("PHÒNG & BẠN BÈ",`
+ <p>Tạo phòng thử nghiệm tối đa 5 người.</p>
+ <button class="action primary" id="createRoom" style="width:100%">TẠO PHÒNG MỚI</button>
+ <p>Nhập mã phòng:</p>
+ <input class="modalInput" id="joinCode" placeholder="Mã phòng 6 số" maxlength="6">
+ <button class="action" id="joinRoom" style="width:100%">THAM GIA</button>
+ <p style="font-size:10px">Phòng hiện chỉ lưu trên trình duyệt này. Chưa kết nối Internet.</p>`);
+ $("createRoom").onclick=()=>{
+  const code=String(Math.floor(100000+Math.random()*900000));
+  const name=$("playerName").value||"Chủ phòng";
+  const rooms=getRooms();
+  rooms[code]={players:[{name,host:true,ready:true}]};saveRooms(rooms);
+  showRoom(code);
+ };
+ $("joinRoom").onclick=()=>{
+  const code=$("joinCode").value.trim(),rooms=getRooms();
+  if(!rooms[code]){alert("Không tìm thấy phòng");return}
+  if(rooms[code].players.length>=5){alert("Phòng đã đủ 5 người");return}
+  rooms[code].players.push({name:$("playerName").value||"Người chơi",host:false,ready:false});
+  saveRooms(rooms);showRoom(code);
+ };
+}
+function showRoom(code){
+ const r=getRooms()[code];if(!r){roomMenu();return}
+ showModal("PHÒNG "+code,`
+ <p>Mã phòng: <b style="font-size:24px;color:#e9c98e">${code}</b></p>
+ <button class="action" id="copyCode" style="width:100%">SAO CHÉP MÃ</button>
+ <h3>THÀNH VIÊN (${r.players.length}/5)</h3>
+ ${r.players.map(p=>`<p>${p.host?"♛":"♙"} ${escapeHTML(p.name)} · ${p.host?"CHỦ PHÒNG":"THÀNH VIÊN"}</p>`).join("")}
+ <p style="font-size:10px">Đây là phòng demo cục bộ, chưa đồng bộ với máy khác.</p>
+ <button class="action primary" id="startRoom">BẮT ĐẦU</button>`);
+ $("copyCode").onclick=async()=>{try{await navigator.clipboard.writeText(code);alert("Đã sao chép")}catch{alert(code)}};
+ $("startRoom").onclick=()=>alert("Màn chơi sẽ được phát triển sau.");
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+$("roomMenu").onclick=roomMenu;
+$("quickRoom").onclick=roomMenu;
+
+/* Cài đặt */
+function settings(){
+ showModal("CÀI ĐẶT",`
+ <div style="display:flex;justify-content:space-between;padding:10px 0">Độ nhạy camera <input id="sensitivity" type="range" min=".4" max="2" step=".1" value="${localStorage.getItem("rowarior_sensitivity")||1}"></div>
+ <div style="display:flex;justify-content:space-between;padding:10px 0">FPS <select id="fpsLimit"><option>60</option><option>30</option></select></div>
+ <div style="display:flex;justify-content:space-between;padding:10px 0">Xoay màn hình <button class="action" id="rotateNow">THỬ KHÓA NGANG</button></div>
+ <button class="action" id="resetSettings" style="width:100%">KHÔI PHỤC CÀI ĐẶT</button>`);
+ $("sensitivity").oninput=e=>localStorage.setItem("rowarior_sensitivity",e.target.value);
+ $("fpsLimit").value=localStorage.getItem("rowarior_fps")||"60";
+ $("fpsLimit").onchange=e=>localStorage.setItem("rowarior_fps",e.target.value);
+ $("rotateNow").onclick=requestLandscape;
+ $("resetSettings").onclick=()=>{localStorage.removeItem("rowarior_sensitivity");localStorage.removeItem("rowarior_fps");settings()};
+}
+$("settingsMenu").onclick=settings;
+
+/* Toàn màn hình và khóa ngang */
+async function requestLandscape(){
+ try{if(screen.orientation?.lock)await screen.orientation.lock("landscape")}catch(e){}
+}
+async function fullscreen(){
+ if(!document.fullscreenElement){
+  try{await document.documentElement.requestFullscreen();await requestLandscape()}catch(e){}
+ }else document.exitFullscreen?.();
+}
+$("fullscreen").onclick=fullscreen;
+$("tryRotate").onclick=requestLandscape;
+document.addEventListener("pointerdown",()=>requestLandscape(),{once:true});
+
+/* Đồ họa */
+function setQuality(q){
+ const cfg={
+  low:{pixel:.75,fog:.033},
+  balanced:{pixel:1.15,fog:.024},
+  high:{pixel:1.5,fog:.02}
+ }[q];
+ renderer.setPixelRatio(Math.min(devicePixelRatio,cfg.pixel));
+ scene.fog.density=cfg.fog;
+ localStorage.setItem("rowarior_quality",q);
+}
+$("quality").value=localStorage.getItem("rowarior_quality")||(mobile?"low":"balanced");
+setQuality($("quality").value);
+$("quality").onchange=()=>setQuality($("quality").value);
+
+/* Vòng lặp */
+const clock=new THREE.Clock();
+let frames=0,fpsTime=0,lastFrame=0;
+function animate(now){
+ requestAnimationFrame(animate);
+ const fpsLimit=Number(localStorage.getItem("rowarior_fps")||60);
+ if(now-lastFrame<1000/fpsLimit)return;
+ lastFrame=now;
+ const dt=Math.min(clock.getDelta(),.04);
+
+ let forward=0,side=0;
+ if(keys.w||keys.arrowup)forward++;
+ if(keys.s||keys.arrowdown)forward--;
+ if(keys.a||keys.arrowleft)side--;
+ if(keys.d||keys.arrowright)side++;
+ forward-=moveY;side+=moveX;
+ const len=Math.hypot(forward,side);
+ if(len>1){forward/=len;side/=len}
+
+ const speed=(crouching?1.35:(keys.shift?4.4:2.8))*dt;
+ // Trục tiến là -Z khi yaw = 0
+ const dx=(-Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed;
+ const dz=(-Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed;
+ player.position.x=THREE.MathUtils.clamp(player.position.x+dx,-8.5,8.5);
+ player.position.z=THREE.MathUtils.clamp(player.position.z+dz,-10.5,10.5);
+
+ if(shiftLock){
+  player.rotation.y=THREE.MathUtils.lerp(player.rotation.y,yaw,Math.min(1,dt*12));
+ }else if(len>.08){
+  player.rotation.y=THREE.MathUtils.lerp(player.rotation.y,Math.atan2(dx,-dz),Math.min(1,dt*9));
+ }
+
+ if(len>.08){
+  walkTime+=dt*(keys.shift?11:8);
+  const step=Math.sin(walkTime);
+  legs[0].rotation.x=step*.48;
+  legs[1].rotation.x=-step*.48;
+  arms[0].rotation.x=-step*.35;
+  arms[1].rotation.x=step*.35;
+  body.position.y=Math.abs(step)*.045;
+  cape.rotation.x=-.12+Math.sin(walkTime)*.035;
+ }else{
+  legs.forEach(l=>l.rotation.x=THREE.MathUtils.lerp(l.rotation.x,0,dt*8));
+  arms.forEach(a=>a.rotation.x=THREE.MathUtils.lerp(a.rotation.x,0,dt*8));
+  body.position.y=Math.sin(clock.elapsedTime*1.5)*.012;
+ }
+ body.scale.y=THREE.MathUtils.lerp(body.scale.y,crouching?.84:1,dt*8);
+
+ if(!grounded){
+  player.position.y+=jumpV*dt;jumpV-=13*dt;
+  if(player.position.y<=0){player.position.y=0;jumpV=0;grounded=true}
+ }
+ if(attackTime>0){
+  attackTime-=dt;
+  sword.rotation.x=-Math.sin((.4-attackTime)*Math.PI/.4)*1.35;
+ }else sword.rotation.x*=.8;
+
+ torches.forEach((t,i)=>{
+  t.light.intensity=7.5+Math.sin(clock.elapsedTime*7+i)*1.4;
+  t.flame.scale.y=.9+Math.sin(clock.elapsedTime*9+i)*.14;
+ });
+ updateCamera();
+ frames++;fpsTime+=dt;
+ if(fpsTime>=1){$("fps").textContent="ROWARIOR · "+Math.round(frames/fpsTime)+" FPS";frames=0;fpsTime=0}
+ renderer.render(scene,camera);
+}
+updateCamera();requestAnimationFrame(animate);
+
+addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+localStorage.setItem("rowarior_version","2.0-lobby");
+</script>
+</body>
+</html>
