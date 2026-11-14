@@ -1,0 +1,1050 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ROWARIOR - The Forgotten Kingdom</title>
+
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08090c;color:#eee;font-family:Georgia,serif;touch-action:none}
+button,input,select{font:inherit}
+button{cursor:pointer}
+#game{position:fixed;inset:0}
+#game canvas{display:block}
+#hud{position:fixed;inset:0;pointer-events:none}
+.panel{background:linear-gradient(145deg,#202027eF,#090a0fee);border:1px solid #927344aa;box-shadow:0 5px 20px #0009;color:#e8ddc7}
+#brand{position:absolute;top:13px;left:16px;padding:10px 15px;border-left:3px solid #c29a59}
+#brand b{font-size:21px;letter-spacing:4px;color:#e8c58a}
+#brand small{display:block;font:9px Arial;letter-spacing:2px;color:#aaa08f;margin-top:4px}
+#profile{position:absolute;right:15px;top:13px;padding:8px 12px;display:flex;align-items:center;gap:9px;pointer-events:auto}
+#avatar{width:34px;height:34px;border:1px solid #b99660;border-radius:50%;display:grid;place-items:center;background:#24232a}
+#playerName{width:115px;background:transparent;color:#f1dfbc;border:0;border-bottom:1px solid #8f754d;padding:5px;outline:none}
+#level{font:9px Arial;color:#b6a78d}
+#doorLabels{position:absolute;inset:0}
+.doorLabel{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:100px;max-width:155px;padding:7px 9px;background:#090b10e8;border:1px solid #a17b49;color:#e7d5b1;font:10px Arial;letter-spacing:.6px;text-align:center;box-shadow:0 3px 12px #0009;border-radius:3px}
+.doorLabel small{display:block;color:#a99b84;margin-top:4px;font-size:9px}
+.doorLabel.active{border-color:#e7bc6f;box-shadow:0 0 15px #d99d4a66}
+.doorLabel.locked{filter:brightness(.65)}
+#heroName{position:absolute;left:50%;top:72%;transform:translateX(-50%);text-align:center;text-shadow:0 3px 8px #000;white-space:nowrap}
+#heroName b{font-size:14px;letter-spacing:3px;color:#e5c58e}
+#heroName small{display:block;font:9px Arial;letter-spacing:1.5px;color:#c6bba5;margin-top:5px}
+#leftMenu{position:absolute;left:15px;bottom:15px;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+.menuBtn{background:linear-gradient(145deg,#35312b,#111216);border:1px solid #927448;color:#e5d4b4;padding:9px 12px;min-width:135px;text-align:left;font:10px Arial;letter-spacing:.6px;box-shadow:0 3px 9px #0008}
+.menuBtn:active,.action:active,.control:active{transform:scale(.96);filter:brightness(1.35)}
+#bottom{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);display:flex;gap:7px;pointer-events:auto}
+.action{background:linear-gradient(145deg,#383128,#111216);border:1px solid #a08456;color:#e9d9ba;padding:11px 14px;min-width:90px;font:10px Arial;letter-spacing:1px;box-shadow:0 4px 12px #0009}
+.action.primary{background:linear-gradient(145deg,#a47b40,#493018);border-color:#e3bd79;color:#fff0d0;font-weight:bold;min-width:150px}
+#qualityBox{position:absolute;right:15px;top:67px;padding:7px 9px;pointer-events:auto;font:10px Arial}
+select{background:#17171b;color:#ead9b8;border:1px solid #987748;padding:5px}
+#help{position:absolute;left:16px;top:100px;color:#c5b89f;font:10px/1.8 Arial;text-shadow:0 2px 5px #000}
+#fps{position:absolute;right:8px;bottom:3px;color:#b7a27d;font:9px Arial}
+#modal{display:none;position:fixed;inset:0;z-index:20;background:#000c;align-items:center;justify-content:center;padding:14px;pointer-events:auto}
+#modal.show{display:flex}
+#modalCard{width:min(440px,94vw);max-height:90vh;overflow:auto;padding:20px;background:linear-gradient(145deg,#28241e,#0a0b0f);border:1px solid #aa8754;box-shadow:0 15px 70px #000;color:#e8ddc5}
+#modalCard h2{font-size:20px;letter-spacing:2px;color:#e6c58e;margin:10px 0}
+#modalCard p{font:12px/1.6 Arial;color:#c6bdad}
+.modalInput{width:100%;padding:11px;margin:5px 0 12px;background:#0c0e12;border:1px solid #826a47;color:#f0dfbd;outline:none}
+.modalRow{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:15px}
+.modalRow .action{min-width:90px}
+.settingRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #ffffff17;font:12px Arial}
+.settingRow input[type=range]{width:120px}
+#rotate{display:none;position:fixed;inset:0;z-index:50;background:#08090c;align-items:center;justify-content:center;text-align:center;padding:25px}
+#mobileControls{display:none;position:fixed;inset:0;pointer-events:none}
+#joy{position:absolute;bottom:19px;left:18px;width:100px;height:100px;border-radius:50%;border:2px solid #a68b61;background:radial-gradient(circle,#36312b99,#08090de8);box-shadow:0 5px 16px #000a,inset 0 0 14px #000;pointer-events:auto;touch-action:none}
+#stick{position:absolute;left:29px;top:29px;width:38px;height:38px;border-radius:50%;background:linear-gradient(145deg,#ddc79e,#705333);border:2px solid #ead5a9;box-shadow:0 3px 8px #000a}
+.control{position:absolute;right:20px;width:51px;height:51px;border-radius:50%;background:linear-gradient(145deg,#514638,#121116);color:#f0dfbd;border:2px solid #b59a6e;box-shadow:0 4px 12px #000a,inset 0 1px 4px #ffffff30;font:10px Arial;pointer-events:auto;touch-action:none}
+#jump{bottom:85px;right:80px}
+#crouch{bottom:19px;right:80px}
+#attack{bottom:25px;right:18px}
+#cameraTouch{position:absolute;inset:0 0 130px 130px;pointer-events:auto;touch-action:pan-y}
+@media(pointer:coarse){
+ #mobileControls{display:block}
+ #help{display:none}
+ #bottom{bottom:8px}
+ #leftMenu{bottom:120px}
+}
+@media(orientation:portrait) and (max-width:800px){
+ #rotate{display:flex}
+}
+@media(max-height:430px){
+ #brand{top:7px;left:9px;padding:6px 9px}
+ #brand b{font-size:16px}
+ #profile{top:7px;right:8px}
+ #qualityBox{top:56px;right:8px}
+ #leftMenu{left:8px;bottom:7px}
+ #bottom{bottom:6px}
+ #heroName{top:69%}
+ #joy{width:86px;height:86px;bottom:10px;left:10px}
+ #stick{left:24px;top:24px}
+ #jump{bottom:69px}
+ #crouch{bottom:9px}
+ #attack{bottom:12px}
+}
+</style>
+</head>
+
+<body>
+<div id="game"></div>
+
+<div id="hud">
+ <div id="brand" class="panel">
+  <b>ROWARIOR</b>
+  <small>THE FORGOTTEN KINGDOM</small>
+ </div>
+
+ <div id="profile" class="panel">
+  <div id="avatar">♜</div>
+  <div>
+   <div id="level">CHIẾN BINH · CẤP 01</div>
+   <input id="playerName" maxlength="18" value="Chiến binh" aria-label="Tên nhân vật">
+  </div>
+ </div>
+
+ <div id="qualityBox" class="panel">
+  ĐỒ HỌA
+  <select id="quality">
+   <option value="low">LOW</option>
+   <option value="balanced">BALANCED</option>
+   <option value="high">HIGH</option>
+  </select>
+ </div>
+
+ <div id="help">
+  WASD: DI CHUYỂN<br>
+  CHUỘT: XOAY CAMERA<br>
+  SPACE: NHẢY · C: NGỒI<br>
+  SHIFT: CHẠY · E: TƯƠNG TÁC
+ </div>
+
+ <div id="doorLabels"></div>
+
+ <div id="heroName">
+  <b id="heroTitle">CHIẾN BINH VÔ DANH</b>
+  <small>KẺ LANG THANG GIỮA VƯƠNG QUỐC LÃNG QUÊN</small>
+ </div>
+
+ <div id="leftMenu">
+  <button class="menuBtn" data-door="0">✦ TRANG PHỤC</button>
+  <button class="menuBtn" data-door="1">✦ KỸ NĂNG</button>
+  <button class="menuBtn" id="roomMenu">✦ PHÒNG & BẠN BÈ</button>
+  <button class="menuBtn" data-door="3">✦ NHÀ PHÁT TRIỂN</button>
+  <button class="menuBtn" id="settingsMenu">⚙ CÀI ĐẶT</button>
+ </div>
+
+ <div id="bottom">
+  <button class="action" id="fullscreen">TOÀN MÀN HÌNH</button>
+  <button class="action primary" data-door="2">CHỌN MÀN CHƠI</button>
+  <button class="action" id="quickRoom">TẠO PHÒNG</button>
+ </div>
+
+ <div id="fps">ROWARIOR · LOBBY</div>
+</div>
+
+<div id="mobileControls">
+ <div id="cameraTouch"></div>
+ <div id="joy"><div id="stick"></div></div>
+ <button class="control" id="jump">NHẢY</button>
+ <button class="control" id="crouch">NGỒI</button>
+ <button class="control" id="attack">ĐÁNH</button>
+</div>
+
+<div id="rotate">
+ <div>
+  <div style="font-size:48px">⟳</div>
+  <h2>ROWARIOR</h2>
+  <p>Hãy xoay ngang thiết bị để bước vào lâu đài.</p>
+  <button class="action primary" id="tryRotate">THỬ XOAY NGANG</button>
+ </div>
+</div>
+
+<div id="modal">
+ <div id="modalCard">
+  <div style="font:9px Arial;letter-spacing:3px;color:#a88b5e">ROWARIOR · THE FORGOTTEN KINGDOM</div>
+  <h2 id="modalTitle">ĐẠI SẢNH</h2>
+  <div id="modalBody"></div>
+  <div class="modalRow">
+   <button class="action" id="modalClose">ĐÓNG</button>
+  </div>
+ </div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+
+/* =========================
+   ROWARIOR - MAIN SETTINGS
+========================= */
+const $=id=>document.getElementById(id);
+const isMobile=matchMedia("(pointer:coarse)").matches;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x100f12);
+scene.fog=new THREE.FogExp2(0x100f12,.026);
+
+const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,100);
+const renderer=new THREE.WebGLRenderer({
+ antialias:!isMobile,
+ powerPreference:"high-performance",
+ stencil:false
+});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?.85:1.25));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
+renderer.shadowMap.enabled=false;
+$("game").appendChild(renderer.domElement);
+
+/* =========================
+   LIGHTS
+========================= */
+scene.add(new THREE.HemisphereLight(0xaaaabd,0x211810,1.5));
+const moon=new THREE.DirectionalLight(0xd9c5a3,1.4);
+moon.position.set(-7,12,8);
+scene.add(moon);
+const torches=[];
+
+function addTorch(x,z){
+ const pole=new THREE.Mesh(
+  new THREE.CylinderGeometry(.09,.14,1.4,7),
+  new THREE.MeshStandardMaterial({color:0x98713d,metalness:.7,roughness:.4})
+ );
+ pole.position.set(x,2.2,z);
+ scene.add(pole);
+
+ const flame=new THREE.Mesh(
+  new THREE.IcosahedronGeometry(.22,1),
+  new THREE.MeshBasicMaterial({color:0xffa044})
+ );
+ flame.position.set(x,3.05,z);
+ scene.add(flame);
+
+ const light=new THREE.PointLight(0xff923d,9,8);
+ light.position.set(x,3,z);
+ scene.add(light);
+ torches.push({flame,light});
+}
+for(let z=-9;z<=9;z+=6){
+ addTorch(-9.5,z);
+ addTorch(9.5,z);
+}
+
+/* =========================
+   MATERIALS
+========================= */
+const stone=new THREE.MeshStandardMaterial({color:0x414047,roughness:1});
+const stone2=new THREE.MeshStandardMaterial({color:0x29282e,roughness:1});
+const worn=new THREE.MeshStandardMaterial({color:0x5b5149,roughness:1});
+const iron=new THREE.MeshStandardMaterial({color:0x343a42,metalness:.78,roughness:.38});
+const silver=new THREE.MeshStandardMaterial({color:0x9b9da0,metalness:.82,roughness:.3});
+const gold=new THREE.MeshStandardMaterial({color:0xa47b42,metalness:.72,roughness:.34});
+const cloth=new THREE.MeshStandardMaterial({color:0x17151a,roughness:1});
+
+function box(parent,x,y,z,w,h,d,mat){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+ m.position.set(x,y,z);
+ m.castShadow=true;
+ m.receiveShadow=true;
+ parent.add(m);
+ return m;
+}
+function cylinder(parent,x,y,z,rt,rb,h,mat,n=8){
+ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,n),mat);
+ m.position.set(x,y,z);
+ m.castShadow=true;
+ parent.add(m);
+ return m;
+}
+
+/* =========================
+   CASTLE HALL
+========================= */
+const floor=new THREE.Mesh(
+ new THREE.PlaneGeometry(45,45),
+ new THREE.MeshStandardMaterial({color:0x29282b,roughness:1})
+);
+floor.rotation.x=-Math.PI/2;
+floor.position.y=-.08;
+scene.add(floor);
+
+for(let x=-5;x<=5;x++){
+ for(let z=-5;z<=5;z++){
+  box(scene,x*2.1,-.015,z*2.1,2.04,.08,2.04,
+   (x+z)%2===0?stone:stone2);
+ }
+}
+
+/* Side walls */
+box(scene,-12,5,0,1,10,25,stone2);
+box(scene,12,5,0,1,10,25,stone2);
+box(scene,0,5,-12,25,10,1,stone2);
+box(scene,0,10,0,25,.7,25,stone2);
+
+/* Pillars */
+for(let z=-9;z<=9;z+=6){
+ for(const x of [-10.5,10.5]){
+  box(scene,x,4.4,z,1.35,8.8,1.35,stone);
+  box(scene,x,8.9,z,1.8,.45,1.8,worn);
+  box(scene,x,9.3,z,1.5,.25,1.5,stone2);
+ }
+}
+
+/* Broken stones */
+for(let i=0;i<20;i++){
+ const x=Math.sin(i*8.7)*10.5;
+ const z=-10+(i%10)*2.2;
+ const debris=box(scene,x,.12,z,.35+Math.random()*.6,.2,.4,stone2);
+ debris.rotation.y=Math.random()*2;
+}
+
+/* =========================
+   FIVE INTERACTIVE DOORS
+========================= */
+const doorInfo=[
+ {name:"KHO TRANG PHỤC",desc:"Khu vực xem, chọn và mua skin, áo giáp, ngoại hình cho chiến binh."},
+ {name:"KỸ NĂNG NHÂN VẬT",desc:"Khu vực chọn và nâng cấp kỹ năng nhân vật. Nội dung chi tiết sẽ được xây dựng sau."},
+ {name:"CHỌN MÀN CHƠI",desc:"Lối vào hành lang gồm 8 cánh cửa màn chơi. Màn đầu tiên sẽ được mở sáng, các màn còn lại bị khóa bằng xích."},
+ {name:"NHÀ PHÁT TRIỂN",desc:"ROWARIOR – THE FORGOTTEN KINGDOM. Khu vực giới thiệu người sáng tạo và nhà phát triển."},
+ {name:"CHƠI CÙNG BẠN BÈ",desc:"Tạo phòng riêng, mời tối đa 4 người bạn tham gia cùng chủ phòng."}
+];
+const doors=[];
+
+function makeDoor(x,z,index,rotation=0){
+ const g=new THREE.Group();
+ g.position.set(x,0,z);
+ g.rotation.y=rotation;
+ scene.add(g);
+ const active=index===0;
+ const frame=active?gold:stone;
+
+ box(g,-1.55,2.5,0,.38,5,.65,frame);
+ box(g,1.55,2.5,0,.38,5,.65,frame);
+ box(g,0,4.95,0,3.5,.42,.65,frame);
+ box(g,0,2.45,-.2,2.7,4.55,.3,active?worn:stone2);
+
+ for(let px=-.9;px<=.9;px+=.9){
+  box(g,px,2.45,-.02,.06,4.1,.06,active?gold:iron);
+ }
+
+ const ornament=new THREE.Mesh(
+  new THREE.TorusGeometry(.42,.07,6,12,Math.PI),
+  active?gold:iron
+ );
+ ornament.position.set(0,4.55,-.05);
+ ornament.rotation.z=Math.PI;
+ g.add(ornament);
+
+ if(!active){
+  for(const side of [-1,1]){
+   for(let j=0;j<6;j++){
+    const link=new THREE.Mesh(
+     new THREE.TorusGeometry(.105,.03,5,8),
+     iron
+    );
+    link.position.set(side*.55,3.5-j*.36,-.36);
+    link.rotation.y=Math.PI/2;
+    g.add(link);
+   }
+  }
+  box(g,0,2.2,-.42,.42,.5,.15,gold);
+ }else{
+  const glow=new THREE.PointLight(0xffb85b,7,8);
+  glow.position.set(0,3,-1);
+  g.add(glow);
+ }
+
+ const marker=new THREE.Mesh(
+  new THREE.CircleGeometry(1.3,24),
+  new THREE.MeshBasicMaterial({
+   color:active?0xb57c36:0x252329,
+   transparent:true,
+   opacity:active?.2:.12
+  })
+ );
+ marker.rotation.x=-Math.PI/2;
+ marker.position.y=.04;
+ g.add(marker);
+
+ doors.push({group:g,index,x,z,active});
+}
+makeDoor(0,-10.7,0);
+makeDoor(-10.8,-5,1,Math.PI/2);
+makeDoor(10.8,-5,2,-Math.PI/2);
+makeDoor(-7,10.7,3,Math.PI);
+makeDoor(7,10.7,4,Math.PI);
+
+/* =========================
+   KNIGHT CHARACTER
+========================= */
+const player=new THREE.Group();
+scene.add(player);
+player.position.set(0,0,2.5);
+
+const body=new THREE.Group();
+player.add(body);
+
+/* Legs */
+const legs=[];
+for(const side of [-1,1]){
+ const x=side*.34;
+ const leg=cylinder(body,x,.72,0,.19,.22,1.05,iron,8);
+ legs.push(leg);
+
+ const knee=new THREE.Mesh(new THREE.SphereGeometry(.23,10,8),silver);
+ knee.position.set(x,1.15,-.02);
+ body.add(knee);
+
+ box(body,x,.25,-.12,.38,.18,.5,iron);
+ box(body,x,1.15,-.22,.22,.07,.05,gold);
+}
+
+/* Armor skirt */
+for(let i=0;i<5;i++){
+ const p=box(body,(i-2)*.22,1.42,0,.22,.65,.14,i%2?iron:cloth);
+ p.rotation.z=(i-2)*-.045;
+}
+
+/* Chest */
+cylinder(body,0,2.1,0,.55,.4,1.15,iron,10);
+box(body,0,2.12,-.42,.72,.67,.13,silver);
+box(body,0,2.1,-.51,.075,.95,.04,gold);
+
+for(const side of [-1,1]){
+ const emblem=new THREE.Mesh(
+  new THREE.TorusGeometry(.19,.035,5,12),gold
+ );
+ emblem.position.set(side*.2,2.2,-.52);
+ emblem.rotation.z=side*.4;
+ body.add(emblem);
+
+ const shoulder=new THREE.Mesh(
+  new THREE.SphereGeometry(.38,10,8),silver
+ );
+ shoulder.position.set(side*.7,2.65,0);
+ shoulder.scale.set(1,.8,1);
+ body.add(shoulder);
+
+ for(let k=0;k<3;k++){
+  box(body,side*.7,2.65-k*.13,-.32,.48,.035,.05,gold);
+ }
+ const arm=cylinder(body,side*.83,2.05,0,.18,.2,.85,iron,8);
+ arm.rotation.z=side*-.15;
+ cylinder(body,side*.88,1.6,0,.2,.16,.42,silver,8);
+ const hand=new THREE.Mesh(new THREE.SphereGeometry(.16,8,8),iron);
+ hand.position.set(side*.88,1.34,0);
+ body.add(hand);
+}
+
+/* Neck and helmet */
+cylinder(body,0,2.82,0,.2,.2,.3,iron,8);
+const helmet=new THREE.Group();
+helmet.position.set(0,3.3,0);
+body.add(helmet);
+
+const helm=new THREE.Mesh(
+ new THREE.SphereGeometry(.39,12,10,0,Math.PI*2,0,Math.PI*.72),
+ silver
+);
+helm.scale.set(1,1.15,.95);
+helmet.add(helm);
+
+box(helmet,0,-.08,-.34,.48,.55,.18,iron);
+box(helmet,0,-.1,-.45,.36,.07,.035,gold);
+box(helmet,0,-.1,-.48,.045,.42,.035,gold);
+
+const crest=new THREE.Mesh(new THREE.ConeGeometry(.15,.36,5),gold);
+crest.position.set(0,.43,0);
+helmet.add(crest);
+
+/* Cape */
+const cape=new THREE.Mesh(
+ new THREE.PlaneGeometry(1.05,1.7,4,5),
+ new THREE.MeshStandardMaterial({color:0x17131a,side:THREE.DoubleSide})
+);
+cape.position.set(0,1.95,.34);
+cape.rotation.x=-.12;
+body.add(cape);
+
+/* Sword */
+const sword=new THREE.Group();
+sword.position.set(.65,1.3,-.65);
+body.add(sword);
+
+const blade=new THREE.Mesh(
+ new THREE.BoxGeometry(.12,1.5,.07),silver
+);
+blade.position.y=-.5;
+sword.add(blade);
+
+const tip=new THREE.Mesh(new THREE.ConeGeometry(.09,.28,4),silver);
+tip.position.y=-1.38;
+tip.rotation.z=Math.PI;
+sword.add(tip);
+
+box(sword,0,.22,0,.62,.11,.12,gold);
+cylinder(sword,0,.02,0,.075,.075,.4,cloth,8);
+
+/* =========================
+   PLAYER INPUT
+========================= */
+const keys={};
+let yaw=0,pitch=.15;
+let moveX=0,moveY=0;
+let jumpV=0,grounded=true;
+let crouching=false;
+let attackTime=0;
+let walkTime=0;
+
+addEventListener("keydown",e=>{
+ keys[e.key.toLowerCase()]=true;
+ if(e.code==="Space"){e.preventDefault();jump()}
+ if(e.key.toLowerCase()==="c")crouching=!crouching;
+ if(e.key.toLowerCase()==="e")openDoor(0);
+});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+function jump(){
+ if(grounded){
+  jumpV=5.5;
+  grounded=false;
+ }
+}
+
+/* Desktop camera drag */
+let dragging=false,lastX=0,lastY=0;
+renderer.domElement.addEventListener("pointerdown",e=>{
+ if(e.pointerType==="mouse"&&e.button===0){
+  dragging=true;
+  lastX=e.clientX;
+  lastY=e.clientY;
+ }
+});
+addEventListener("pointerup",()=>dragging=false);
+addEventListener("pointermove",e=>{
+ if(!dragging)return;
+ yaw-=(e.clientX-lastX)*.005;
+ pitch=THREE.MathUtils.clamp(
+  pitch+(e.clientY-lastY)*.003,-.1,.65
+ );
+ lastX=e.clientX;
+ lastY=e.clientY;
+});
+
+/* Mobile joystick */
+const joy=$("joy"),stick=$("stick");
+let joyActive=false;
+
+joy.addEventListener("pointerdown",e=>{
+ joyActive=true;
+ joy.setPointerCapture(e.pointerId);
+ moveJoy(e);
+});
+joy.addEventListener("pointermove",e=>{
+ if(joyActive)moveJoy(e);
+});
+
+function moveJoy(e){
+ const r=joy.getBoundingClientRect();
+ let dx=e.clientX-r.left-r.width/2;
+ let dy=e.clientY-r.top-r.height/2;
+ const max=30,len=Math.hypot(dx,dy);
+ if(len>max){dx=dx/len*max;dy=dy/len*max}
+ moveX=dx/max;
+ moveY=dy/max;
+ stick.style.transform=`translate(${dx}px,${dy}px)`;
+}
+function resetJoy(){
+ joyActive=false;
+ moveX=0;moveY=0;
+ stick.style.transform="translate(0,0)";
+}
+joy.addEventListener("pointerup",resetJoy);
+joy.addEventListener("pointercancel",resetJoy);
+
+$("jump").addEventListener("pointerdown",jump);
+$("crouch").addEventListener("pointerdown",()=>crouching=!crouching);
+$("attack").addEventListener("pointerdown",()=>attackTime=.4);
+
+/* Mobile camera drag */
+let touchLook=false,touchX=0,touchY=0;
+$("cameraTouch").addEventListener("pointerdown",e=>{
+ touchLook=true;
+ touchX=e.clientX;touchY=e.clientY;
+ $("cameraTouch").setPointerCapture(e.pointerId);
+});
+$("cameraTouch").addEventListener("pointermove",e=>{
+ if(!touchLook)return;
+ yaw-=(e.clientX-touchX)*.006;
+ pitch=THREE.MathUtils.clamp(
+  pitch+(e.clientY-touchY)*.003,-.1,.65
+ );
+ touchX=e.clientX;touchY=e.clientY;
+});
+$("cameraTouch").addEventListener("pointerup",()=>touchLook=false);
+$("cameraTouch").addEventListener("pointercancel",()=>touchLook=false);
+
+/* =========================
+   PLAYER NAME
+========================= */
+const nameInput=$("playerName");
+nameInput.value=localStorage.getItem("rowarior_name")||"Chiến binh";
+
+function updateName(){
+ localStorage.setItem("rowarior_name",nameInput.value);
+ $("heroTitle").textContent=(nameInput.value||"CHIẾN BINH VÔ DANH").toUpperCase();
+}
+nameInput.addEventListener("input",updateName);
+updateName();
+
+/* =========================
+   CAMERA THIRD PERSON
+========================= */
+const target=new THREE.Vector3();
+
+function updateCamera(){
+ const distance=7;
+ const horizontal=Math.cos(pitch)*distance;
+ camera.position.set(
+  player.position.x+Math.sin(yaw)*horizontal,
+  player.position.y+2.8+Math.sin(pitch)*distance,
+  player.position.z+Math.cos(yaw)*horizontal
+ );
+ target.set(
+  player.position.x,
+  player.position.y+2,
+  player.position.z
+ );
+ camera.lookAt(target);
+}
+
+/* =========================
+   MODALS AND DOORS
+========================= */
+function showModal(title,html){
+ $("modalTitle").textContent=title;
+ $("modalBody").innerHTML=html;
+ $("modal").classList.add("show");
+}
+function closeModal(){$("modal").classList.remove("show")}
+$("modalClose").onclick=closeModal;
+
+function openDoor(i){
+ const d=doorInfo[i];
+ if(i===4){openRoomMenu();return}
+ let extra="";
+ if(i===2){
+  extra="<p>Hành lang 8 màn chơi sẽ được thiết kế sau khi bạn quyết định nội dung. Hiện tại chưa mở màn chiến đấu.</p>";
+ }
+ if(i===0)extra="<p>Chức năng cửa hàng trang phục sẽ được hoàn thiện ở bản tiếp theo.</p>";
+ if(i===1)extra="<p>Chức năng lựa chọn và nâng cấp kỹ năng sẽ được hoàn thiện ở bản tiếp theo.</p>";
+ if(i===3)extra="<p>Người sáng tạo: ROWARIOR project.</p>";
+ showModal(d.name,`<p>${d.desc}</p>${extra}`);
+}
+
+const labelEls=[];
+doorInfo.forEach((d,i)=>{
+ const el=document.createElement("button");
+ el.className="doorLabel "+(i===0?"active":"locked");
+ el.innerHTML=`${i+1}. ${d.name}<small>${i===0?"SẴN SÀNG":"ĐANG KHÓA"}</small>`;
+ el.onclick=()=>openDoor(i);
+ $("doorLabels").appendChild(el);
+ labelEls.push(el);
+});
+
+function updateDoorLabels(){
+ for(const d of doors){
+  const v=new THREE.Vector3(d.x,3.2,d.z);
+  v.project(camera);
+  const x=(v.x*.5+.5)*innerWidth;
+  const y=(-v.y*.5+.5)*innerHeight;
+  const el=labelEls[d.index];
+  el.style.left=x+"px";
+  el.style.top=y+"px";
+  el.style.display=(v.z<1 && x>-50 && x<innerWidth+50 && y>-30 && y<innerHeight+30)?"block":"none";
+ }
+}
+document.querySelectorAll("[data-door]").forEach(b=>{
+ b.addEventListener("click",()=>openDoor(Number(b.dataset.door)));
+});
+
+/* =========================
+   ROOM SYSTEM - LOCAL DEMO
+========================= */
+function randomCode(){
+ return String(Math.floor(100000+Math.random()*900000));
+}
+function readRooms(){
+ try{return JSON.parse(localStorage.getItem("rowarior_rooms")||"{}")}
+ catch{return {}}
+}
+function saveRooms(rooms){
+ localStorage.setItem("rowarior_rooms",JSON.stringify(rooms));
+}
+
+function openRoomMenu(){
+ showModal("PHÒNG & BẠN BÈ",`
+  <p>Tạo phòng riêng, làm chủ phòng và mời tối đa 4 người bạn.</p>
+  <button class="action primary" id="createRoom" style="width:100%">＋ TẠO PHÒNG MỚI</button>
+  <div style="height:12px"></div>
+  <label style="font:11px Arial">NHẬP MÃ PHÒNG</label>
+  <input id="joinCode" class="modalInput" maxlength="6" inputmode="numeric" placeholder="Ví dụ: 583921">
+  <button class="action" id="joinRoom" style="width:100%">THAM GIA PHÒNG</button>
+  <p style="font-size:10px;color:#9e927d">Bản hiện tại lưu phòng trong trình duyệt để thử giao diện. Chưa kết nối người chơi qua Internet.</p>
+ `);
+ $("createRoom").onclick=createRoom;
+ $("joinRoom").onclick=joinRoom;
+}
+
+function createRoom(){
+ const code=randomCode();
+ const rooms=readRooms();
+ const host=nameInput.value.trim()||"Chủ phòng";
+ rooms[code]={
+  code,
+  host,
+  players:[{name:host,host:true,ready:true}],
+  max:5,
+  status:"waiting",
+  created:Date.now()
+ };
+ saveRooms(rooms);
+ showRoom(code);
+}
+
+function joinRoom(){
+ const code=$("joinCode").value.trim();
+ const rooms=readRooms();
+ const room=rooms[code];
+ if(!room){
+  alert("Không tìm thấy phòng. Hãy kiểm tra mã phòng.");
+  return;
+ }
+ if(room.players.length>=5){
+  alert("Phòng đã đủ 5 người.");
+  return;
+ }
+ const playerName=nameInput.value.trim()||"Người chơi";
+ if(room.players.some(p=>p.name===playerName)){
+  alert("Tên người chơi này đã có trong phòng.");
+  return;
+ }
+ room.players.push({name:playerName,host:false,ready:false});
+ saveRooms(rooms);
+ showRoom(code);
+}
+
+function showRoom(code){
+ const rooms=readRooms();
+ const room=rooms[code];
+ if(!room){openRoomMenu();return}
+ const list=room.players.map((p,i)=>`
+  <div class="settingRow">
+   <span>${p.host?"♛":"♙"} ${escapeHTML(p.name)}</span>
+   <span style="color:${p.ready?"#a9ce8b":"#b5a17e"}">${p.host?"CHỦ PHÒNG":p.ready?"SẴN SÀNG":"ĐANG CHỜ"}</span>
+  </div>
+ `).join("");
+ showModal("PHÒNG "+code,`
+  <p>Mã phòng của bạn. Gửi mã này cho tối đa 4 người bạn.</p>
+  <div style="font-size:28px;letter-spacing:6px;text-align:center;color:#e9c98e;padding:12px;border:1px solid #8f744d">${code}</div>
+  <button class="action" id="copyCode" style="width:100%;margin-top:8px">SAO CHÉP MÃ PHÒNG</button>
+  <h3 style="font-size:13px;color:#d6bd91;margin:18px 0 5px">THÀNH VIÊN (${room.players.length}/5)</h3>
+  ${list}
+  <div class="modalRow">
+   <button class="action" id="leaveRoom">RỜI PHÒNG</button>
+   ${room.players[0].name===(nameInput.value.trim()||"Chủ phòng")?
+    '<button class="action primary" id="startRoom">BẮT ĐẦU</button>':
+    '<button class="action" id="readyRoom">SẴN SÀNG</button>'}
+  </div>
+  <p style="font-size:10px;color:#a89a82">Đây là phòng thử nghiệm trên cùng trình duyệt. Muốn mời bạn ở thiết bị/mạng khác cần máy chủ multiplayer.</p>
+ `);
+ $("copyCode").onclick=()=>copyText(code);
+ $("leaveRoom").onclick=()=>{
+  const rs=readRooms();
+  if(rs[code]){
+   rs[code].players=rs[code].players.filter(p=>p.name!==(nameInput.value.trim()||"Chủ phòng"));
+   if(rs[code].players.length===0||room.players[0].name===(nameInput.value.trim()||"Chủ phòng"))delete rs[code];
+   saveRooms(rs);
+  }
+  openRoomMenu();
+ };
+ const ready=$("readyRoom");
+ if(ready)ready.onclick=()=>{
+  const rs=readRooms();
+  if(rs[code]){
+   const p=rs[code].players.find(p=>p.name===(nameInput.value.trim()||"Người chơi"));
+   if(p)p.ready=!p.ready;
+   saveRooms(rs);
+  }
+  showRoom(code);
+ };
+ const start=$("startRoom");
+ if(start)start.onclick=()=>{
+  alert("Phòng đã sẵn sàng trong bản giao diện thử. Màn chơi sẽ được xây dựng sau.");
+ };
+}
+
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+async function copyText(s){
+ try{await navigator.clipboard.writeText(s);alert("Đã sao chép mã phòng: "+s)}
+ catch{alert("Mã phòng: "+s)}
+}
+
+$("roomMenu").onclick=openRoomMenu;
+$("quickRoom").onclick=createRoom;
+
+/* =========================
+   SETTINGS
+========================= */
+let soundOn=localStorage.getItem("rowarior_sound")!=="off";
+let sensitivity=Number(localStorage.getItem("rowarior_sensitivity")||"1");
+
+function settingsMenu(){
+ showModal("CÀI ĐẶT",`
+  <div class="settingRow">
+   <span>Âm thanh</span>
+   <button class="action" id="soundToggle">${soundOn?"ĐANG BẬT":"ĐANG TẮT"}</button>
+  </div>
+  <div class="settingRow">
+   <span>Độ nhạy camera</span>
+   <input id="sensitivity" type="range" min=".4" max="2" step=".1" value="${sensitivity}">
+  </div>
+  <div class="settingRow">
+   <span>Chất lượng đồ họa</span>
+   <select id="qualityInside">
+    <option value="low">LOW</option>
+    <option value="balanced">BALANCED</option>
+    <option value="high">HIGH</option>
+   </select>
+  </div>
+  <div class="settingRow">
+   <span>Giới hạn FPS</span>
+   <select id="fpsLimit">
+    <option value="60">60 FPS</option>
+    <option value="30">30 FPS</option>
+   </select>
+  </div>
+  <div class="settingRow">
+   <span>Kích thước nút mobile</span>
+   <select id="buttonSize">
+    <option value="small">Nhỏ</option>
+    <option value="normal">Vừa</option>
+    <option value="large">Lớn</option>
+   </select>
+  </div>
+  <div class="settingRow">
+   <span>Toàn màn hình</span>
+   <button class="action" id="fullInside">MỞ</button>
+  </div>
+  <button class="action" id="resetSettings" style="width:100%;margin-top:12px">KHÔI PHỤC MẶC ĐỊNH</button>
+ `);
+ $("soundToggle").onclick=()=>{
+  soundOn=!soundOn;
+  localStorage.setItem("rowarior_sound",soundOn?"on":"off");
+  $("soundToggle").textContent=soundOn?"ĐANG BẬT":"ĐANG TẮT";
+ };
+ $("sensitivity").oninput=e=>{
+  sensitivity=Number(e.target.value);
+  localStorage.setItem("rowarior_sensitivity",sensitivity);
+ };
+ $("qualityInside").value=$("quality").value;
+ $("qualityInside").onchange=e=>{
+  $("quality").value=e.target.value;
+  setQuality(e.target.value);
+ };
+ $("fpsLimit").value=localStorage.getItem("rowarior_fps")||"60";
+ $("fpsLimit").onchange=e=>localStorage.setItem("rowarior_fps",e.target.value);
+ $("buttonSize").value=localStorage.getItem("rowarior_button_size")||"small";
+ $("buttonSize").onchange=e=>{
+  localStorage.setItem("rowarior_button_size",e.target.value);
+  applyButtonSize(e.target.value);
+ };
+ $("fullInside").onclick=toggleFullscreen;
+ $("resetSettings").onclick=()=>{
+  localStorage.removeItem("rowarior_quality");
+  localStorage.removeItem("rowarior_sound");
+  localStorage.removeItem("rowarior_sensitivity");
+  localStorage.removeItem("rowarior_fps");
+  localStorage.removeItem("rowarior_button_size");
+  $("quality").value=isMobile?"low":"balanced";
+  setQuality($("quality").value);
+  soundOn=true;sensitivity=1;
+  applyButtonSize("small");
+  settingsMenu();
+ };
+}
+function applyButtonSize(size){
+ const scale=size==="large"?1.16:size==="normal"?1:.88;
+ document.querySelectorAll(".control").forEach(b=>{
+  b.style.width=(51*scale)+"px";
+  b.style.height=(51*scale)+"px";
+ });
+}
+$("settingsMenu").onclick=settingsMenu;
+$("fullscreen").onclick=toggleFullscreen;
+
+function toggleFullscreen(){
+ if(!document.fullscreenElement){
+  document.documentElement.requestFullscreen?.().then(requestLandscape).catch(()=>{});
+ }else document.exitFullscreen?.();
+}
+async function requestLandscape(){
+ try{
+  if(screen.orientation?.lock)await screen.orientation.lock("landscape");
+ }catch(e){}
+}
+$("tryRotate").onclick=requestLandscape;
+
+/* =========================
+   GRAPHICS QUALITY
+========================= */
+function setQuality(q){
+ const options={
+  low:{ratio:.75,fog:.034,exposure:1.08},
+  balanced:{ratio:1.15,fog:.026,exposure:1.15},
+  high:{ratio:1.5,fog:.022,exposure:1.2}
+ };
+ const s=options[q]||options.low;
+ renderer.setPixelRatio(Math.min(devicePixelRatio,s.ratio));
+ scene.fog.density=s.fog;
+ renderer.toneMappingExposure=s.exposure;
+ localStorage.setItem("rowarior_quality",q);
+}
+$("quality").value=localStorage.getItem("rowarior_quality")||(isMobile?"low":"balanced");
+setQuality($("quality").value);
+$("quality").onchange=()=>setQuality($("quality").value);
+applyButtonSize(localStorage.getItem("rowarior_button_size")||"small");
+
+/* =========================
+   ORIENTATION SUPPORT
+========================= */
+document.addEventListener("pointerdown",requestLandscape,{once:true});
+
+/* =========================
+   FPS AND PERFORMANCE
+========================= */
+const clock=new THREE.Clock();
+let frames=0,fpsTime=0,lowTime=0;
+let lastFrame=0;
+
+function updateFPS(dt){
+ frames++;
+ fpsTime+=dt;
+ if(fpsTime>=1){
+  const fps=Math.round(frames/fpsTime);
+  $("fps").textContent="ROWARIOR · "+fps+" FPS";
+  if(fps<25)lowTime++;
+  else lowTime=0;
+  if(lowTime>=5&&$("quality").value!=="low"){
+   $("quality").value="low";
+   setQuality("low");
+   lowTime=0;
+  }
+  frames=0;
+  fpsTime=0;
+ }
+}
+
+/* =========================
+   MAIN GAME LOOP
+========================= */
+function animate(now){
+ requestAnimationFrame(animate);
+
+ const limit=localStorage.getItem("rowarior_fps")==="30"?30:60;
+ if(now-lastFrame<1000/limit)return;
+ lastFrame=now;
+
+ const dt=Math.min(clock.getDelta(),.04);
+ let forward=0,side=0;
+
+ if(keys.w||keys.arrowup)forward++;
+ if(keys.s||keys.arrowdown)forward--;
+ if(keys.a||keys.arrowleft)side--;
+ if(keys.d||keys.arrowright)side++;
+
+ /* Joystick up means forward, down means backward */
+ forward-=moveY;
+ side+=moveX;
+
+ const len=Math.hypot(forward,side);
+ if(len>1){forward/=len;side/=len}
+
+ const speed=(crouching?1.45:(keys.shift?4.5:3))*dt;
+
+ /* Camera-relative movement:
+    yaw = 0 => forward is toward -Z */
+ const dx=(-Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed;
+ const dz=(-Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed;
+
+ player.position.x=THREE.MathUtils.clamp(player.position.x+dx,-7.5,7.5);
+ player.position.z=THREE.MathUtils.clamp(player.position.z+dz,-8,8);
+
+ if(len>.08){
+  player.rotation.y=THREE.MathUtils.lerp(
+   player.rotation.y,
+   Math.atan2(dx,-dz),
+   Math.min(1,dt*8)
+  );
+  walkTime+=dt*7;
+  body.position.y=Math.sin(walkTime*2)*.025;
+  legs[0].rotation.x=Math.sin(walkTime)*.45;
+  legs[1].rotation.x=-Math.sin(walkTime)*.45;
+ }else{
+  body.position.y=Math.sin(clock.elapsedTime*1.5)*.015;
+  legs[0].rotation.x*=.85;
+  legs[1].rotation.x*=.85;
+ }
+
+ if(!grounded){
+  player.position.y+=jumpV*dt;
+  jumpV-=13*dt;
+  if(player.position.y<=0){
+   player.position.y=0;
+   jumpV=0;
+   grounded=true;
+  }
+ }
+
+ body.scale.y=THREE.MathUtils.lerp(body.scale.y,crouching?.82:1,dt*8);
+
+ if(attackTime>0){
+  attackTime-=dt;
+  sword.rotation.x=-Math.sin((.4-attackTime)*Math.PI/.4)*1.4;
+ }else{
+  sword.rotation.x*=.75;
+ }
+
+ torches.forEach((t,i)=>{
+  t.light.intensity=8+Math.sin(clock.elapsedTime*7+i)*1.7;
+  t.flame.scale.y=.9+Math.sin(clock.elapsedTime*9+i)*.15;
+ });
+
+ updateCamera();
+ updateDoorLabels();
+ updateFPS(dt);
+ renderer.render(scene,camera);
+}
+updateCamera();
+requestAnimationFrame(animate);
+
+/* =========================
+   RESIZE
+========================= */
+addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+localStorage.setItem("rowarior_version","1.0-lobby");
+</script>
+</body>
+</html>
