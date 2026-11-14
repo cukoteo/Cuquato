@@ -1,0 +1,579 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ROWARIOR - The Forgotten Kingdom</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08090d;color:#eee;font-family:Georgia,serif;touch-action:none}
+#world{position:fixed;inset:0}
+#ui{position:fixed;inset:0;pointer-events:none}
+button,input{font:inherit}
+button{cursor:pointer}
+.glass{background:linear-gradient(135deg,#171a20eF,#090b10eF);border:1px solid #92734488;box-shadow:0 5px 25px #0008;color:#e8dfca}
+#logo{position:absolute;top:16px;left:22px;padding:12px 18px;border-left:3px solid #bd9552}
+#logo b{font-size:23px;letter-spacing:4px;color:#e5c58b}
+#logo small{display:block;color:#aaa08e;font:10px Arial;letter-spacing:2px;margin-top:4px}
+#profile{position:absolute;top:16px;right:20px;padding:10px 14px;pointer-events:auto;display:flex;gap:10px;align-items:center}
+#avatar{width:35px;height:35px;border-radius:50%;border:1px solid #c5a36d;background:linear-gradient(135deg,#404653,#111);display:grid;place-items:center;font-size:19px}
+#playerName{background:transparent;color:#f0dfbd;border:0;border-bottom:1px solid #8f754d;width:125px;padding:5px;outline:none}
+#qualityBox{position:absolute;top:78px;right:20px;padding:8px 12px;pointer-events:auto;font:12px Arial}
+select{background:#11151d;color:#e5d2aa;border:1px solid #8e744c;padding:6px;border-radius:4px}
+#hint{position:absolute;top:85px;left:22px;color:#c4b99f;font:11px Arial;line-height:1.8;text-shadow:0 2px 5px #000}
+#doorLabels{position:absolute;inset:0}
+.doorLabel{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;text-align:center;min-width:110px;padding:8px 10px;background:#080a0dcc;border:1px solid #9a7847;color:#e6d4ad;border-radius:4px;font:11px Arial;letter-spacing:1px}
+.doorLabel small{display:block;color:#9c927f;margin-top:4px;font-size:9px}
+.doorLabel.locked{filter:brightness(.55);border-color:#555}
+.doorLabel.active{border-color:#e7bc6f;box-shadow:0 0 18px #c18a3c66}
+#heroName{position:absolute;left:50%;top:70%;transform:translateX(-50%);text-align:center;text-shadow:0 2px 8px #000;white-space:nowrap}
+#heroName b{font-size:15px;letter-spacing:3px;color:#e4c58c}
+#heroName small{display:block;font:10px Arial;color:#c4bba9;margin-top:5px;letter-spacing:2px}
+#bottom{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:9px;align-items:center;pointer-events:auto}
+.action{padding:12px 18px;min-width:105px;background:#17140fdd;border:1px solid #8e7046;color:#e5d4b3;letter-spacing:1px;font-size:11px}
+.action.primary{background:linear-gradient(#a57a3c,#49331c);border-color:#e5c17b;color:#fff1d3;font-weight:bold;min-width:160px}
+.action:active,.doorLabel:active{filter:brightness(1.5)}
+#side{position:absolute;left:20px;bottom:22px;display:flex;flex-direction:column;gap:7px;pointer-events:auto}
+.sideBtn{padding:9px 13px;text-align:left;background:#10131bcc;border:1px solid #78613e;color:#d9c8a5;font:11px Arial;min-width:145px}
+#modal{display:none;position:fixed;inset:0;background:#000b;z-index:5;align-items:center;justify-content:center;padding:18px}
+#modal.show{display:flex}
+#modalCard{width:min(440px,92vw);padding:25px;background:linear-gradient(145deg,#24221e,#0b0d12);border:1px solid #a17c49;box-shadow:0 15px 70px #000;color:#e8ddc5}
+#modalCard h2{font-size:21px;color:#e3c28a;letter-spacing:2px}
+#modalCard p{font:13px/1.7 Arial;color:#c6bdad}
+#modalActions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
+#rotate{display:none;position:fixed;inset:0;z-index:10;background:#08090d;align-items:center;justify-content:center;text-align:center;padding:25px}
+#mobileControls{display:none;position:fixed;inset:0;pointer-events:none}
+#joy{position:absolute;bottom:25px;left:25px;width:115px;height:115px;border-radius:50%;border:2px solid #ffffff55;background:#111a;pointer-events:auto;touch-action:none}
+#stick{position:absolute;left:32px;top:32px;width:47px;height:47px;border-radius:50%;background:#b8955b;border:2px solid #e9d5a9}
+.mobBtn{position:absolute;right:25px;width:62px;height:62px;border-radius:50%;background:#17130fe8;color:#ead5ac;border:1px solid #b48b52;pointer-events:auto;touch-action:none;font-size:11px}
+#jump{bottom:100px}
+#crouch{bottom:25px;right:100px}
+#fps{position:absolute;bottom:5px;right:8px;font:10px Arial;color:#a99b7f;opacity:.7}
+@media(pointer:coarse){
+ #mobileControls{display:block}
+ #hint{display:none}
+ #bottom{bottom:12px}
+ #side{bottom:150px}
+}
+@media(orientation:portrait) and (max-width:800px){
+ #rotate{display:flex}
+}
+@media(max-height:430px){
+ #logo{top:8px;left:12px;padding:7px 12px}
+ #logo b{font-size:17px}
+ #profile{top:8px;right:10px}
+ #qualityBox{top:65px;right:10px}
+ #side{left:10px;bottom:10px}
+ #bottom{bottom:9px}
+ #heroName{top:68%}
+}
+</style>
+</head>
+<body>
+<div id="world"></div>
+
+<div id="ui">
+ <div id="logo" class="glass">
+  <b>ROWARIOR</b>
+  <small>THE FORGOTTEN KINGDOM</small>
+ </div>
+
+ <div id="profile" class="glass">
+  <div id="avatar">♜</div>
+  <div>
+   <div style="font:9px Arial;color:#a99b82">CHIẾN BINH</div>
+   <input id="playerName" maxlength="18" value="Chiến binh" aria-label="Tên người chơi">
+  </div>
+ </div>
+
+ <div id="qualityBox" class="glass">
+  ĐỒ HỌA
+  <select id="quality">
+   <option value="low">LOW</option>
+   <option value="balanced">BALANCED</option>
+   <option value="high">HIGH</option>
+  </select>
+ </div>
+
+ <div id="hint">
+  PC: WASD DI CHUYỂN · CHUỘT KÉO ĐỂ XOAY GÓC NHÌN<br>
+  SPACE: NHẢY · C: NGỒI · E: TƯƠNG TÁC
+ </div>
+
+ <div id="doorLabels"></div>
+
+ <div id="heroName">
+  <b id="heroTitle">CHIẾN BINH VÔ DANH</b>
+  <small>KẺ LANG THANG GIỮA VƯƠNG QUỐC LÃNG QUÊN</small>
+ </div>
+
+ <div id="side">
+  <button class="sideBtn" data-door="0">✦  KHO TRANG PHỤC</button>
+  <button class="sideBtn" data-door="1">✦  KỸ NĂNG NHÂN VẬT</button>
+  <button class="sideBtn" data-door="3">✦  NGƯỜI PHÁT TRIỂN</button>
+ </div>
+
+ <div id="bottom">
+  <button class="action" id="settingsBtn">CÀI ĐẶT</button>
+  <button class="action primary" data-door="2">BƯỚC VÀO HÀNH LANG</button>
+  <button class="action" data-door="4">CHƠI CÙNG BẠN</button>
+ </div>
+
+ <div id="fps">ROWARIOR · LOBBY</div>
+</div>
+
+<div id="mobileControls">
+ <div id="joy"><div id="stick"></div></div>
+ <button class="mobBtn" id="jump">NHẢY</button>
+ <button class="mobBtn" id="crouch">NGỒI</button>
+</div>
+
+<div id="rotate">
+ <div>
+  <div style="font-size:48px">⟳</div>
+  <h2>ROWARIOR</h2>
+  <p>Vui lòng xoay ngang thiết bị để bước vào lâu đài.</p>
+ </div>
+</div>
+
+<div id="modal">
+ <div id="modalCard">
+  <div style="font:10px Arial;letter-spacing:3px;color:#9d865e">ROWARIOR · ĐẠI SẢNH</div>
+  <h2 id="modalTitle">CỬA LÂU ĐÀI</h2>
+  <p id="modalText"></p>
+  <div id="modalActions">
+   <button class="action" id="closeModal">QUAY LẠI</button>
+   <button class="action primary" id="modalConfirm">TIẾP TỤC</button>
+  </div>
+ </div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from "three";
+
+const $=id=>document.getElementById(id);
+const mobile=matchMedia("(pointer:coarse)").matches;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x100f12);
+scene.fog=new THREE.FogExp2(0x100f12,.025);
+
+const camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,.1,100);
+const renderer=new THREE.WebGLRenderer({
+ antialias:!mobile,
+ powerPreference:"high-performance",
+ stencil:false
+});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.35));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
+$("world").appendChild(renderer.domElement);
+
+// LIGHTING
+scene.add(new THREE.HemisphereLight(0x9b9eae,0x211710,1.5));
+const mainLight=new THREE.DirectionalLight(0xd7c6a3,1.6);
+mainLight.position.set(-5,10,7);
+scene.add(mainLight);
+
+const warmLights=[];
+function addLight(x,y,z,color=0xff9a42,intensity=14,range=12){
+ const l=new THREE.PointLight(color,intensity,range,2);
+ l.position.set(x,y,z);scene.add(l);warmLights.push(l);return l;
+}
+addLight(0,7,1,0xffc47b,18,18);
+
+// MATERIALS
+const rock=new THREE.MeshStandardMaterial({color:0x414047,roughness:1});
+const rockDark=new THREE.MeshStandardMaterial({color:0x24232a,roughness:1});
+const worn=new THREE.MeshStandardMaterial({color:0x5a5149,roughness:1});
+const iron=new THREE.MeshStandardMaterial({color:0x343a42,metalness:.75,roughness:.4});
+const silver=new THREE.MeshStandardMaterial({color:0x9a9da0,metalness:.8,roughness:.3});
+const gold=new THREE.MeshStandardMaterial({color:0x9c7440,metalness:.72,roughness:.34});
+const cloth=new THREE.MeshStandardMaterial({color:0x171820,roughness:1});
+
+function box(parent,x,y,z,w,h,d,mat){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+ m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;
+ parent.add(m);return m;
+}
+function cylinder(parent,x,y,z,rt,rb,h,mat,n=8){
+ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,n),mat);
+ m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m;
+}
+
+// HALL FLOOR
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(50,50),
+ new THREE.MeshStandardMaterial({color:0x29282b,roughness:.95}));
+floor.rotation.x=-Math.PI/2;floor.position.y=-.08;scene.add(floor);
+
+for(let x=-5;x<=5;x++){
+ for(let z=-5;z<=5;z++){
+  const tile=box(scene,x*2.3,-.015,z*2.3,2.25,.08,2.25,
+   ((x+z)%2===0)?rockDark:rock);
+  tile.position.y=-.015;
+ }
+}
+
+// HALL WALLS AND CEILING
+box(scene,0,5,-12,25,10,1,rockDark);
+box(scene,-12,5,0,1,10,25,rockDark);
+box(scene,12,5,0,1,10,25,rockDark);
+box(scene,0,10,0,25,.8,25,rockDark);
+
+// ARCHES / PILLARS
+for(let z=-9;z<=9;z+=6){
+ for(const x of [-10.5,10.5]){
+  box(scene,x,4.5,z,1.5,9,1.5,rock);
+  box(scene,x,9.1,z,2.1,.5,2.1,worn);
+ }
+}
+for(let x=-9;x<=9;x+=6){
+ box(scene,x,4.5,-11.3,1.2,9,1.2,rock);
+ box(scene,x,9.1,-11.3,1.8,.5,1.8,worn);
+}
+
+// RUIN DETAILS
+for(let i=0;i<18;i++){
+ const x=Math.sin(i*8.7)*10.8;
+ const z=-10+(i%9)*2.5;
+ const debris=box(scene,x,.18,z,.3+Math.random()*.8,.25,.35,rockDark);
+ debris.rotation.y=Math.random()*2;
+}
+
+// FIVE DOORS
+const doors=[];
+const doorInfo=[
+ {name:"KHO TRANG PHỤC",desc:"Tại đây bạn có thể xem, chọn và mua trang phục, giáp và ngoại hình cho chiến binh."},
+ {name:"KỸ NĂNG NHÂN VẬT",desc:"Khu vực xem và lựa chọn kỹ năng của nhân vật. Hệ thống kỹ năng sẽ được xây dựng ở phiên bản tiếp theo."},
+ {name:"CHỌN MÀN CHƠI",desc:"Cánh cửa dẫn tới hành lang gồm 8 cánh cửa màn chơi. Màn đầu tiên sẽ được mở sáng, các màn còn lại bị khóa bằng xích."},
+ {name:"NHÀ PHÁT TRIỂN",desc:"ROWARIOR – THE FORGOTTEN KINGDOM. Khu vực giới thiệu người sáng tạo và quá trình phát triển trò chơi."},
+ {name:"CHƠI CÙNG BẠN BÈ",desc:"Khu vực tổ đội tối đa 5 người. Tính năng kết nối nhiều người chơi sẽ được phát triển sau."}
+];
+
+function makeDoor(x,z,index,rotation=0){
+ const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=rotation;scene.add(g);
+ const active=index===0;
+ const frameMat=active?gold:rock;
+ box(g,-1.65,2.5,0,.45,5.2,.8,frameMat);
+ box(g,1.65,2.5,0,.45,5.2,.8,frameMat);
+ box(g,0,5,0,3.75,.5,.8,frameMat);
+ box(g,0,2.5,-.25,2.8,4.6,.35,active?new THREE.MeshStandardMaterial({color:0x40352a,roughness:.9}):rockDark);
+ // door panels
+ for(let x=-.9;x<=.9;x+=.9){
+  box(g,x,2.5,-.04,.07,4.2,.08,active?gold:iron);
+ }
+ // arch ornament
+ const ornament=new THREE.Mesh(new THREE.TorusGeometry(.48,.07,6,12,Math.PI),
+  active?gold:iron);
+ ornament.position.set(0,4.6,-.02);ornament.rotation.z=Math.PI;g.add(ornament);
+ // chains for locked doors
+ if(!active){
+  for(let side of [-1,1]){
+   for(let i=0;i<6;i++){
+    const link=new THREE.Mesh(new THREE.TorusGeometry(.12,.035,5,8),
+     new THREE.MeshStandardMaterial({color:0x77716a,metalness:.8,roughness:.5}));
+    link.position.set(side*.6,3.6-i*.38,-.35);
+    link.rotation.y=Math.PI/2;g.add(link);
+   }
+  }
+  const lock=box(g,0,2.3,-.5,.48,.58,.16,gold);
+ }
+ // floor marker
+ const marker=new THREE.Mesh(new THREE.CircleGeometry(1.5,24),
+  new THREE.MeshBasicMaterial({color:active?0x8f632d:0x242329,transparent:true,opacity:active?.2:.15}));
+ marker.rotation.x=-Math.PI/2;marker.position.y=.035;g.add(marker);
+ if(active)addLight(x,3,z-1,0xffad52,8,8);
+ doors.push({group:g,index,x,z,active});
+}
+
+// Five sides of hall: front + side alcoves + rear
+makeDoor(0,-10.7,0,0);
+makeDoor(-10.8,-5,1,Math.PI/2);
+makeDoor(10.8,-5,2,-Math.PI/2);
+makeDoor(-7,10.7,3,Math.PI);
+makeDoor(7,10.7,4,Math.PI);
+
+// TORCHES
+function makeTorch(x,z){
+ cylinder(scene,x,2.2,z,.1,.13,1.4,gold,7);
+ const flame=new THREE.Mesh(new THREE.IcosahedronGeometry(.22,1),
+  new THREE.MeshBasicMaterial({color:0xffa342}));
+ flame.position.set(x,3,z);scene.add(flame);
+ addLight(x,3,z,0xff8a3a,9,7);
+ return flame;
+}
+const flames=[];
+for(const x of [-10.8,10.8,-5.5,5.5])flames.push(makeTorch(x,-2));
+for(const x of [-10,10])flames.push(makeTorch(x,8));
+
+// KNIGHT MODEL - procedural detailed armor
+const knight=new THREE.Group();scene.add(knight);
+knight.position.set(0,0,1.5);
+const body=new THREE.Group();knight.add(body);
+
+// boots and legs
+for(const side of [-1,1]){
+ const x=side*.34;
+ cylinder(body,x,.62,0,.19,.22,.95,iron,8);
+ const knee=new THREE.Mesh(new THREE.SphereGeometry(.24,10,8),silver);
+ knee.position.set(x,1.08,-.02);body.add(knee);
+ box(body,x,.35,-.13,.38,.18,.55,iron);
+ // gold knee detail
+ box(body,x,1.08,-.22,.23,.08,.06,gold);
+}
+// skirt armor
+for(let i=0;i<5;i++){
+ const p=box(body,(i-2)*.22,1.35,0,.23,.65,.12,i%2?iron:rockDark);
+ p.rotation.z=(i-2)*-.05;
+}
+// torso
+const torso=cylinder(body,0,2.05,0,.57,.4,1.15,iron,10);
+torso.scale.x=1.1;
+box(body,0,2.12,-.43,.68,.65,.12,silver);
+box(body,0,2.1,-.51,.08,.95,.05,gold);
+// chest decorative curves
+for(const side of [-1,1]){
+ const emblem=new THREE.Mesh(new THREE.TorusGeometry(.2,.035,5,12),
+  gold);
+ emblem.position.set(side*.2,2.2,-.52);emblem.rotation.z=side*.4;body.add(emblem);
+ // shoulders
+ const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.39,10,8),silver);
+ shoulder.position.set(side*.7,2.65,0);
+ shoulder.scale.set(1,.8,1);body.add(shoulder);
+ for(let k=0;k<3;k++){
+  const stripe=box(body,side*.7,2.65-k*.13,-.34,.52,.035,.06,gold);
+ }
+ // arms
+ const arm=cylinder(body,side*.83,2.05,0,.18,.2,.85,iron,8);
+ arm.rotation.z=side*-.15;
+ cylinder(body,side*.88,1.6,0,.2,.16,.42,silver,8);
+ const hand=new THREE.Mesh(new THREE.SphereGeometry(.17,8,8),iron);
+ hand.position.set(side*.88,1.34,0);body.add(hand);
+}
+// neck
+cylinder(body,0,2.82,0,.2,.2,.3,iron,8);
+// helmet
+const helmet=new THREE.Group();helmet.position.set(0,3.3,0);body.add(helmet);
+const helm=new THREE.Mesh(new THREE.SphereGeometry(.39,12,10,0,Math.PI*2,0,Math.PI*.72),silver);
+helm.scale.set(1,1.15,.95);helmet.add(helm);
+const face=box(helmet,0,-.08,-.34,.48,.55,.18,iron);
+box(helmet,0,-.1,-.45,.36,.07,.035,gold);
+box(helmet,0,-.1,-.48,.045,.42,.035,gold);
+const crest=new THREE.Mesh(new THREE.ConeGeometry(.16,.38,5),gold);
+crest.position.set(0,.43,0);helmet.add(crest);
+// sword down in front
+const sword=new THREE.Group();sword.position.set(0,1.3,-.7);body.add(sword);
+const blade=new THREE.Mesh(new THREE.BoxGeometry(.13,1.5,.07),silver);
+blade.position.y=-.5;sword.add(blade);
+const tip=new THREE.Mesh(new THREE.ConeGeometry(.095,.3,4),silver);
+tip.position.y=-1.38;tip.rotation.z=Math.PI;sword.add(tip);
+box(sword,0,.22,0,.65,.11,.12,gold);
+cylinder(sword,0,.02,0,.08,.08,.4,rockDark,8);
+// back cape
+const cape=new THREE.Mesh(new THREE.PlaneGeometry(1.1,1.7,4,5),
+ new THREE.MeshStandardMaterial({color:0x17151a,side:THREE.DoubleSide,roughness:1}));
+cape.position.set(0,1.95,.35);cape.rotation.x=-.12;body.add(cape);
+
+// CAMERA / CHARACTER CONTROLS
+let yaw=0,pitch=.12,camDistance=9;
+let keys={};let moveX=0,moveY=0;
+let jumpV=0,grounded=true,crouching=false;
+let drag=false,lastX=0,lastY=0;
+const target=new THREE.Vector3();
+
+addEventListener("keydown",e=>{
+ keys[e.key.toLowerCase()]=true;
+ if(e.code==="Space"){e.preventDefault();jump()}
+ if(e.key.toLowerCase()==="c")crouching=!crouching;
+ if(e.key.toLowerCase()==="e")openDoor(0);
+});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+renderer.domElement.addEventListener("pointerdown",e=>{
+ if(e.pointerType==="mouse"){drag=true;lastX=e.clientX;lastY=e.clientY}
+});
+addEventListener("pointerup",()=>drag=false);
+addEventListener("pointermove",e=>{
+ if(!drag)return;
+ yaw-=(e.clientX-lastX)*.005;
+ pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lastY)*.003,-.1,.65);
+ lastX=e.clientX;lastY=e.clientY;
+});
+
+function jump(){if(grounded){jumpV=5.5;grounded=false}}
+
+// mobile joystick
+const joy=$("joy"),stick=$("stick");
+let joyOn=false;
+joy.addEventListener("pointerdown",e=>{
+ joyOn=true;joy.setPointerCapture(e.pointerId);moveJoy(e);
+});
+joy.addEventListener("pointermove",e=>{if(joyOn)moveJoy(e)});
+function moveJoy(e){
+ const r=joy.getBoundingClientRect();
+ let dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2;
+ const len=Math.hypot(dx,dy),max=35;
+ if(len>max){dx=dx/len*max;dy=dy/len*max}
+ moveX=dx/max;moveY=dy/max;
+ stick.style.transform=`translate(${dx}px,${dy}px)`;
+}
+function joyReset(){
+ joyOn=false;moveX=0;moveY=0;stick.style.transform="translate(0,0)";
+}
+joy.addEventListener("pointerup",joyReset);
+joy.addEventListener("pointercancel",joyReset);
+$("jump").addEventListener("pointerdown",jump);
+$("crouch").addEventListener("pointerdown",()=>crouching=!crouching);
+
+// PLAYER NAME
+const nameInput=$("playerName");
+nameInput.value=localStorage.getItem("rowarior_name")||"Chiến binh";
+function updateName(){
+ localStorage.setItem("rowarior_name",nameInput.value);
+ $("heroTitle").textContent=(nameInput.value||"CHIẾN BINH VÔ DANH").toUpperCase();
+}
+nameInput.addEventListener("input",updateName);updateName();
+
+// DOOR UI
+const labels=$("doorLabels");
+const labelEls=[];
+doorInfo.forEach((d,i)=>{
+ const el=document.createElement("button");
+ el.className="doorLabel "+(i===0?"active":"locked");
+ el.innerHTML=`${i+1}. ${d.name}<small>${i===0?"ĐANG SẴN SÀNG":"ĐANG KHÓA"}</small>`;
+ el.addEventListener("click",()=>openDoor(i));
+ labels.appendChild(el);labelEls.push(el);
+});
+function openDoor(i){
+ const d=doorInfo[i];
+ $("modalTitle").textContent=d.name;
+ $("modalText").textContent=d.desc;
+ $("modalConfirm").textContent=i===2?"XEM HÀNH LANG":"ĐÃ HIỂU";
+ $("modalConfirm").onclick=()=>{
+  closeModal();
+  if(i===2){
+   $("modalTitle").textContent="HÀNH LANG 8 CÁNH CỬA";
+   $("modalText").textContent="Đây sẽ là khu vực chọn màn chơi. Hiện tại đang để trống theo yêu cầu để bạn quyết định thiết kế sau.";
+   $("modal").classList.add("show");
+   $("modalConfirm").textContent="ĐÓNG";
+   $("modalConfirm").onclick=closeModal;
+   $("closeModal").onclick=closeModal;
+  }
+ };
+ $("modal").classList.add("show");
+}
+function closeModal(){$("modal").classList.remove("show")}
+$("closeModal").onclick=closeModal;
+$("settingsBtn").onclick=()=>{
+ $("modalTitle").textContent="CÀI ĐẶT";
+ $("modalText").textContent="Chọn mức đồ họa ở góc trên bên phải. LOW dành cho máy yếu, BALANCED cân bằng hình ảnh và hiệu năng, HIGH dành cho máy mạnh.";
+ $("modalConfirm").textContent="ĐÓNG";
+ $("modalConfirm").onclick=closeModal;
+ $("modal").classList.add("show");
+};
+document.querySelectorAll("[data-door]").forEach(b=>{
+ b.addEventListener("click",()=>openDoor(Number(b.dataset.door)));
+});
+
+// QUALITY
+function setQuality(q){
+ const opts={
+  low:{ratio:.75,shadows:false,fog:.032},
+  balanced:{ratio:1.15,shadows:false,fog:.025},
+  high:{ratio:1.5,shadows:true,fog:.021}
+ };
+ const s=opts[q]||opts.low;
+ renderer.setPixelRatio(Math.min(devicePixelRatio,s.ratio));
+ renderer.shadowMap.enabled=s.shadows;
+ scene.fog.density=s.fog;
+ localStorage.setItem("rowarior_quality",q);
+}
+const quality=$("quality");
+quality.value=localStorage.getItem("rowarior_quality")||(mobile?"low":"balanced");
+setQuality(quality.value);
+quality.addEventListener("change",()=>setQuality(quality.value));
+
+// ORIENTATION LOCK: supported browsers only, requires user gesture
+async function requestLandscape(){
+ try{
+  if(screen.orientation?.lock) await screen.orientation.lock("landscape");
+ }catch(e){}
+}
+document.addEventListener("pointerdown",requestLandscape,{once:true});
+
+// CAMERA
+function updateCamera(){
+ const h=Math.cos(pitch)*camDistance;
+ camera.position.set(
+  knight.position.x+Math.sin(yaw)*h,
+  knight.position.y+2.8+Math.sin(pitch)*camDistance,
+  knight.position.z+Math.cos(yaw)*h
+ );
+ target.set(knight.position.x,2.1+knight.position.y,knight.position.z);
+ camera.lookAt(target);
+}
+
+// ANIMATION
+const clock=new THREE.Clock();
+let step=0,frames=0,fpsTime=0,lowSecs=0;
+function animate(){
+ requestAnimationFrame(animate);
+ const dt=Math.min(clock.getDelta(),.04);
+ let forward=0,side=0;
+ if(keys.w||keys.arrowup)forward++;
+ if(keys.s||keys.arrowdown)forward--;
+ if(keys.a||keys.arrowleft)side--;
+ if(keys.d||keys.arrowright)side++;
+ forward-=moveY;side+=moveX;
+ const len=Math.hypot(forward,side);
+ if(len>1){forward/=len;side/=len}
+ const speed=(crouching?1.5:3.2)*dt;
+ const dx=(Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed;
+ const dz=(Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed;
+ knight.position.x=THREE.MathUtils.clamp(knight.position.x+dx,-7.5,7.5);
+ knight.position.z=THREE.MathUtils.clamp(knight.position.z+dz,-8,8);
+
+ if(len>.08){
+  knight.rotation.y=THREE.MathUtils.lerp(knight.rotation.y,Math.atan2(dx,dz),dt*7);
+  step+=dt*7;
+  body.position.y=Math.sin(step*2)*.025;
+ }else{
+  body.position.y=Math.sin(clock.elapsedTime*1.5)*.018;
+ }
+ if(!grounded){
+  knight.position.y+=jumpV*dt;jumpV-=13*dt;
+  if(knight.position.y<=0){knight.position.y=0;jumpV=0;grounded=true}
+ }
+ body.scale.y=THREE.MathUtils.lerp(body.scale.y,crouching?.8:1,dt*8);
+ flames.forEach((f,i)=>{
+  f.scale.y=.85+Math.sin(clock.elapsedTime*8+i)*.18;
+ });
+ updateCamera();
+ renderer.render(scene,camera);
+
+ frames++;fpsTime+=dt;
+ if(fpsTime>1){
+  const fps=Math.round(frames/fpsTime);
+  $("fps").textContent="ROWARIOR · "+fps+" FPS";
+  if(fps<25)lowSecs++;else lowSecs=0;
+  if(lowSecs>=4&&quality.value!=="low"){
+   quality.value="low";setQuality("low");lowSecs=0;
+  }
+  frames=0;fpsTime=0;
+ }
+}
+updateCamera();animate();
+
+addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
