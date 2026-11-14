@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ROWARIOR - The Forgotten Kingdom (ProMax Edition)</title>
+<style>
+  :root {
+    --gold: #f0cf85;
+    --gold-dark: #9c7538;
+    --glass: rgba(12, 18, 30, 0.78);
+    --glass-border: rgba(240, 207, 133, 0.35);
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #060a12;
+    color: #fff;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    touch-action: none;
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  button {
+    background: linear-gradient(145deg, #b38742, #543918);
+    border: 1px solid var(--gold);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: transform 0.12s ease, filter 0.15s ease;
+  }
+  button:active {
+    transform: scale(0.93);
+    filter: brightness(1.15);
+  }
+
+  /* Màn hình Loading */
+  #loading {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: radial-gradient(circle at center, #162238 0%, #060a12 100%);
+    display: grid;
+    place-content: center;
+    text-align: center;
+    gap: 12px;
+  }
+  #loading .title {
+    font-family: Georgia, serif;
+    font-size: clamp(32px, 6vw, 56px);
+    letter-spacing: 6px;
+    color: var(--gold);
+    text-shadow: 0 0 25px rgba(240, 207, 133, 0.5);
+  }
+
+  /* Hiệu ứng chuyển màn mượt mà */
+  #fadeOverlay {
+    position: fixed;
+    inset: 0;
+    background: #04070d;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 80;
+    transition: opacity 0.45s ease;
+  }
+  #fadeOverlay.active {
+    opacity: 1;
+  }
+
+  /* HUD Tổng thể */
+  #hud {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .top {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    max-width: 65%;
+  }
+  .pill {
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+  }
+  .menu {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    display: flex;
+    gap: 6px;
+    pointer-events: auto;
+  }
+  .menu button {
+    padding: 8px 11px;
+    font-size: 12px;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Thông báo Toast */
+  #toast {
+    position: absolute;
+    top: 68px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: rgba(12, 18, 30, 0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--gold);
+    padding: 10px 20px;
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff6e0;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    max-width: 88%;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Tiêu đề sảnh chính */
+  #center {
+    position: absolute;
+    top: 24%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  #center h1 {
+    font: bold clamp(28px, 6vw, 58px) Georgia, serif;
+    letter-spacing: 6px;
+    margin: 0;
+    background: linear-gradient(to bottom, #fff5d6, #d9a74a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  #center p {
+    color: #e7d9b5;
+    margin: 6px 0;
+    font-size: clamp(12px, 2vw, 15px);
+  }
+
+  /* Nút tương tác nổi khi lại gần 4 cửa góc phải / rương / cửa thoát */
+  #interactPrompt {
+    position: absolute;
+    bottom: 24%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    pointer-events: auto;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(28, 38, 58, 0.92), rgba(14, 20, 32, 0.95));
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 25px rgba(240, 207, 133, 0.45);
+    padding: 12px 22px;
+    border-radius: 50px;
+    font-size: 15px;
+    color: #fff;
+    animation: pulsePrompt 1.6s infinite ease-in-out;
+  }
+  #interactPrompt.visible {
+    display: flex;
+    transform: translateX(-50%) scale(1);
+  }
+  @keyframes pulsePrompt {
+    0%, 100% { box-shadow: 0 0 18px rgba(240, 207, 133, 0.35); }
+    50% { box-shadow: 0 0 32px rgba(240, 207, 133, 0.75); }
+  }
+
+  /* Vùng cảm ứng xoay camera trên Mobile (nửa phải màn hình) */
+  #touchLookZone {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 55vw;
+    height: 100vh;
+    z-index: 5;
+    display: none;
+  }
+
+  /* Bố cục điều khiển Mobile chuyên biệt */
+  #mobileControls {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 15;
+    display: none;
+  }
+  /* Joystick góc trái dưới */
+  #joy {
+    position: absolute;
+    bottom: max(22px, env(safe-area-inset-bottom));
+    left: max(24px, env(safe-area-inset-left));
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    border: 2px solid rgba(240, 207, 133, 0.45);
+    background: radial-gradient(circle, rgba(255,255,255,0.08), rgba(10,16,28,0.45));
+    backdrop-filter: blur(4px);
+    pointer-events: auto;
+  }
+  #knob {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    left: 32px;
+    top: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff4d4, #c99b42);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    pointer-events: none;
+  }
+
+  /* Nút Nhảy ở trên, Nút Ngồi ở dưới — nằm phía trên gần góc trái dưới */
+  .left-stance-btns {
+    position: absolute;
+    bottom: calc(max(22px, env(safe-area-inset-bottom)) + 126px);
+    left: max(28px, env(safe-area-inset-left));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: auto;
+  }
+  .stance-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    padding: 0;
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid var(--gold);
+    font-size: 20px;
+    display: grid;
+    place-items: center;
+  }
+  .stance-btn.active {
+    background: linear-gradient(135deg, #c99b42, #6e4c1e);
+    box-shadow: 0 0 15px rgba(240, 207, 133, 0.6);
+  }
+
+  /* Cụm nút chiến đấu góc phải dưới cho Mobile */
+  .right-combat-btns {
+    position: absolute;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    right: max(24px, env(safe-area-inset-right));
+    display: flex;
+    gap: 14px;
+    align-items: flex-end;
+    pointer-events: auto;
+  }
+  .combat-btn {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    padding: 0;
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid var(--gold);
+    font-size: 24px;
+    display: grid;
+    place-items: center;
+  }
+  .combat-btn.atk {
+    width: 72px;
+    height: 72px;
+    font-size: 28px;
+    background: linear-gradient(145deg, rgba(168, 56, 56, 0.85), rgba(75, 20, 20, 0.9));
+  }
+
+  /* Gợi ý phím tắt cho PC */
+  #pcHint {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 15, 25, 0.72);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #cbd5e1;
+    pointer-events: none;
+  }
+
+  /* Panel Menu */
+  #panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(4, 8, 16, 0.85);
+    backdrop-filter: blur(8px);
+    overflow: auto;
+    padding: 16px;
+  }
+  .panelbox {
+    max-width: 860px;
+    margin: 16px auto;
+    background: linear-gradient(180deg, #162033, #0e1522);
+    border: 1px solid var(--gold);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+  }
+  .panelhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+  .panelhead h2 { margin: 0; color: var(--gold); }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(240, 207, 133, 0.22);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+  }
+  .item .emoji { font-size: 34px; margin-bottom: 6px; }
+  .item p { font-size: 12px; color: #cbd2dc; margin: 6px 0 10px; }
+  .item button { width: 100%; }
+  input[type="text"], input:not([type]) {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--gold-dark);
+    background: #0b111d;
+    color: white;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  /* Xoay màn hình ngang trên điện thoại */
+  #rotate {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    background: #060a12;
+    place-content: center;
+    text-align: center;
+    padding: 20px;
+  }
+  @media (orientation: portrait) and (max-width: 900px) {
+    #rotate { display: grid; }
+  }
+  @media (max-width: 900px) {
+    .menu button { font-size: 11px; padding: 7px 9px; }
+    .pill { font-size: 11px; padding: 6px 9px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="title">⚔️ ROWARIOR</div>
+  <div style="color:#d8c396;font-size:15px">Đang kiến tạo vương quốc ProMax...</div>
+</div>
+
+<div id="fadeOverlay"></div>
+
+<div id="rotate">
+  <div style="font-size:48px">📱🔄</div>
+  <h2 style="color:var(--gold)">Hãy xoay ngang điện thoại</h2>
+  <p style="color:#cbd5e1">ROWARIOR hoạt động mượt mà nhất ở chế độ màn hình ngang.</p>
+</div>
+
+<!-- Vùng vuốt xoay camera chuyên dụng cho Mobile -->
+<div id="touchLookZone"></div>
+
+<div id="hud">
+  <div class="top">
+    <div class="pill" id="playerLabel">⚔️ Chiến binh</div>
+    <div class="pill" id="gold">🪙 100</div>
+    <div class="pill" id="health">❤️ 100/100</div>
+    <div class="pill" id="stage">🏰 Sảnh Hoàng Gia</div>
+  </div>
+  <div class="menu">
+    <button onclick="openPanel('inventory')">🎒 Túi đồ</button>
+    <button onclick="openPanel('skins')">🛡️ Trang phục</button>
+    <button onclick="openPanel('shop')">🛒 Cửa hàng</button>
+    <button onclick="openPanel('friends')">☰ Bạn bè</button>
+    <button onclick="openPanel('settings')">⚙️</button>
+  </div>
+
+  <div id="toast"></div>
+
+  <div id="center">
+    <h1>ROWARIOR</h1>
+    <p>THE FORGOTTEN KINGDOM</p>
+    <p>Bước thẳng vào <b>8 cánh cửa phía trước</b> để tự động dịch chuyển vào màn chơi</p>
+  </div>
+
+  <!-- Nút tương tác hiện ra khi lại gần 4 cửa góc phải / rương / cửa thoát -->
+  <button id="interactPrompt" onclick="interact()">
+    <span id="promptIcon">🚪</span>
+    <span id="promptText">Mở cửa (E)</span>
+  </button>
+
+  <div id="pcHint">PC: <b>WASD</b> Di chuyển · <b>Kéo chuột</b> Xoay góc nhìn · <b>Space</b> Nhảy · <b>C</b> Ngồi · <b>F</b> Đánh · <b>Q</b> Đỡ · <b>E</b> Tương tác</div>
+</div>
+
+<!-- Giao diện điều khiển riêng cho Mobile -->
+<div id="mobileControls">
+  <!-- Nút Nhảy ở trên, Nút Ngồi ở dưới, nằm phía trên gần góc trái dưới -->
+  <div class="left-stance-btns">
+    <button class="stance-btn" id="btnJump" aria-label="Nhảy">⬆️</button>
+    <button class="stance-btn" id="btnCrouch" aria-label="Ngồi">🧎</button>
+  </div>
+  <!-- Joystick góc trái dưới -->
+  <div id="joy"><div id="knob"></div></div>
+  <!-- Cụm nút hành động góc phải dưới -->
+  <div class="right-combat-btns">
+    <button class="combat-btn" id="btnDefend" aria-label="Phòng thủ">🛡️</button>
+    <button class="combat-btn atk" id="btnAttack" aria-label="Tấn công">⚔️</button>
+  </div>
+</div>
+
+<div id="panel">
+  <div class="panelbox">
+    <div class="panelhead">
+      <h2 id="panelTitle">Túi đồ</h2>
+      <button onclick="closePanel()">Đóng ✕</button>
+    </div>
+    <div id="panelContent"></div>
+  </div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const \$ = id => document.getElementById(id);
+
+// Nhận diện thiết bị Mobile / Cảm ứng để tách biệt giao diện PC & Mobile
+const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || window.innerWidth <= 900;
+if (isMobile) {
+  \$('mobileControls').style.display = 'block';
+  $('touchLookZone').style.display = 'block';$('pcHint').style.display = 'none';
+}
+
+// Khởi tạo Scene & Renderer chuẩn ProMax mượt mà
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d1522);
+scene.fog = new THREE.FogExp2(0x0d1522, 0.014);
+
+const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.15, 220);
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  powerPreference: 'high-performance'
+});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+// Hệ thống ánh sáng điện ảnh (Cinematic Lighting)
+const hemiLight = new THREE.HemisphereLight(0xdce8ff, 0x2b1e16, 1.35);
+scene.add(hemiLight);
+
+const sun = new THREE.DirectionalLight(0xffe0b2, 2.4);
+sun.position.set(18, 32, 16);
+sun.castShadow = true;
+sun.shadow.mapSize.width = 1024;
+sun.shadow.mapSize.height = 1024;
+sun.shadow.camera.near = 2;
+sun.shadow.camera.far = 90;
+const d = 32;
+sun.shadow.camera.left = -d;
+sun.shadow.camera.right = d;
+sun.shadow.camera.top = d;
+sun.shadow.camera.bottom = -d;
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+// Vật liệu PBR sắc nét
+const mat = (c, r = 0.7, m = 0.1, emissive = 0x000000, emissiveIntensity = 0) =>
+  new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m, emissive, emissiveIntensity });
+
+const stoneMat = mat(0x4a4e59, 0.75, 0.15);
+const marbleMat = mat(0x283244, 0.35, 0.25);
+const darkMat = mat(0x1b2230, 0.65, 0.2);
+const goldMat = mat(0xe3b857, 0.25, 0.85, 0x553b08, 0.2);
+const carpetMat = mat(0x7a1c24, 0.85, 0.05);
+const woodMat = mat(0x54361d, 0.8, 0.05);
+const grassMat = mat(0x36593a, 0.88, 0.02);
+const sandMat = mat(0xc4a76c, 0.9, 0.02);
+const waterMat = mat(0x1f7a9c, 0.15, 0.4, 0x082a38, 0.3);
+const leafMat = mat(0x2a5234, 0.85, 0.02);
+
+// Tái sử dụng Geometry để tối ưu FPS không giật lag
+const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+const sphereGeo = new THREE.SphereGeometry(1, 16, 12);
+const cylGeo = new THREE.CylinderGeometry(1, 1, 1, 16);
+
+const cube = (w, h, d, m, x, y, z, parent = scene, shadow = true) => {
+  const o = new THREE.Mesh(boxGeo, m);
+  o.scale.set(w, h, d);
+  o.position.set(x, y, z);
+  o.castShadow = shadow;
+  o.receiveShadow = true;
+  parent.add(o);
+  return o;
+};
+
+const sphere = (r, m, x, y, z,
