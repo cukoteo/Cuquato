@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#08091d"><title>ROWARIOR — The Forgotten Kingdom</title>
+<style>
+:root{--cyan:#8af7ff;--violet:#a36bff;--gold:#ffd77c;--glass:rgba(8,13,35,.76);--line:rgba(135,221,255,.55)}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050714;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}#app{position:absolute;inset:0;overflow:hidden;background:#08091d}#world{position:absolute;inset:0;width:100%;height:100%;display:block;outline:0}#ui{position:absolute;inset:0;pointer-events:none}.interactive{pointer-events:auto}#ui .topbar,#ui .sidemenu,#ui .mission,#ui .brand,#ui .bottomchat,#ui .joystick,#ui .ffControls,#ui .rightSkills,#ui .interact,#ui .panel{pointer-events:auto}#ui button{pointer-events:auto}.glass{background:linear-gradient(135deg,rgba(13,20,49,.86),rgba(18,11,48,.68));border:1px solid var(--line);box-shadow:0 0 22px rgba(79,132,255,.16),inset 0 0 22px rgba(127,87,255,.09);backdrop-filter:blur(12px);border-radius:15px}.topbar{position:absolute;left:14px;right:14px;top:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.profile{display:flex;align-items:center;gap:10px;padding:7px 13px 7px 7px;min-width:205px}.avatar{width:54px;height:54px;border-radius:50%;border:2px solid #c4a7ff;background:radial-gradient(circle at 40% 25%,#fff,#b5c6ff 20%,#22295e 55%,#080a20);display:grid;place-items:center;font-size:27px;box-shadow:0 0 16px #8c66ff}.profile strong{font-size:15px}.profile small{display:block;color:#d8d9ff;font-weight:700;margin-top:3px}.xp{height:7px;background:#171b39;border-radius:8px;margin-top:6px;overflow:hidden}.xp i{display:block;width:46%;height:100%;background:linear-gradient(90deg,#a34dff,#50eaff);border-radius:8px}.currencies{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}.currency{padding:9px 13px;font-weight:900;font-size:14px;white-space:nowrap}.topactions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}.topbtn,.sidebtn,.skill,.actionbtn,.portalbtn{border:1px solid var(--line);color:white;background:linear-gradient(145deg,rgba(22,35,75,.92),rgba(32,14,66,.9));box-shadow:0 0 13px #684cff30;cursor:pointer;font-weight:800}.topbtn{min-width:62px;padding:9px 8px;border-radius:13px;text-align:center;font-size:11px}.topbtn b{display:block;font-size:22px;margin-bottom:3px}.sidemenu{position:absolute;left:12px;top:50%;transform:translateY(-42%);display:flex;flex-direction:column;gap:9px}.sidebtn{width:70px;height:66px;border-radius:17px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px}.sidebtn b{font-size:25px}.mission{position:absolute;right:14px;top:112px;width:min(255px,28vw);padding:13px}.mission strong{color:#ffdf8a}.mission small{display:block;color:#e2e6ff;margin-top:7px;line-height:1.45}.brand{position:absolute;left:13%;top:22%;font-family:Georgia,serif;font-size:clamp(30px,5vw,66px);font-weight:900;letter-spacing:2px;color:#fff;text-shadow:0 0 8px #fff,0 0 22px #a45cff,3px 4px 0 #5c32a4;pointer-events:none}.brand span{display:block;font:700 12px Inter,sans-serif;letter-spacing:5px;text-align:center;color:#e7d8ff}.bottomchat{position:absolute;left:14px;bottom:12px;padding:9px 13px;font-size:11px;max-width:310px}.bottomchat b{color:#8df6ff}.stageTitle{position:absolute;left:50%;top:13%;transform:translateX(-50%);text-align:center;text-shadow:0 0 18px #9d65ff;letter-spacing:3px;font-weight:1000;font-size:clamp(15px,2vw,24px)}.stageTitle small{display:block;font-size:10px;color:#b8dfff;letter-spacing:4px;margin-top:4px}.rightSkills{position:absolute;right:18px;bottom:20px;display:flex;align-items:flex-end;gap:11px}.skill{width:67px;height:67px;border-radius:50%;font-size:24px;position:relative;box-shadow:0 0 18px #7c55ff70,inset 0 0 17px #794dff55}.skill small{position:absolute;left:50%;transform:translateX(-50%);bottom:-19px;font-size:10px;white-space:nowrap}.attack{width:94px;height:94px;border-radius:50%;font-size:38px;background:radial-gradient(circle,#514caa,#341342 70%);border:2px solid #a9f8ff}.joystick{position:absolute;left:24px;bottom:35px;width:116px;height:116px;border-radius:50%;border:2px solid #91d9ff77;background:#15234788;box-shadow:inset 0 0 20px #829fff30;pointer-events:auto}.stick{position:absolute;left:34px;top:34px;width:46px;height:46px;border-radius:50%;background:linear-gradient(145deg,#d7eaff,#7185c7);box-shadow:0 0 16px #a8dfff88}
+
+/* FREE FIRE STYLE JUMP & CROUCH BUTTONS */
+.ffControls{position:absolute;right:160px;bottom:28px;display:flex;gap:10px;z-index:5}
+.ffBtn{width:62px;height:62px;border-radius:50%;border:2px solid #a9f8ff;background:radial-gradient(circle,rgba(35,48,95,.95),rgba(15,22,50,.9));color:#fff;font-weight:900;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 15px #7c55ff77;cursor:pointer}
+.ffBtn b{font-size:20px;margin-bottom:2px}
+
+.interact{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);padding:12px 23px;border-radius:24px;font-weight:900;display:none}.panel{position:absolute;inset:7% 10%;padding:20px;overflow:auto;pointer-events:auto;background:linear-gradient(140deg,rgba(9,13,36,.96),rgba(27,13,58,.95));border:1px solid #9d8cff;border-radius:22px;box-shadow:0 0 50px #704cff55;display:none}.panel h2{margin:0 0 5px;font-size:24px;color:#e4d4ff}.panel p{color:#c5c9ec;font-size:13px}.close{float:right;border:1px solid #9acfff;background:#172348;color:white;border-radius:10px;padding:8px 12px;font-weight:900}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:11px;margin-top:17px}.item{padding:13px;border:1px solid #5c75b8;background:linear-gradient(145deg,#18244b,#241344);border-radius:14px;min-height:105px}.item b{display:block;font-size:14px;margin:6px 0}.item small{color:#c7c9e8}.item button{margin-top:9px;background:#6849b8;border:1px solid #b49bff;color:white;border-radius:9px;padding:7px 10px;font-weight:800}.intro,.victory,.cinema{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle at 50% 48%,#29185fdd,#050716 72%);pointer-events:auto}.intro{display:flex}.intro h1{font:900 clamp(40px,9vw,100px) Georgia,serif;letter-spacing:5px;text-shadow:0 0 12px white,0 0 45px #a14cff;margin:0}.intro p{letter-spacing:5px;color:#c8baff}.intro .sigil{font-size:70px;filter:drop-shadow(0 0 22px #9e5cff);animation:pulse 1.5s infinite alternate}@keyframes pulse{to{transform:scale(1.2) rotate(12deg);filter:drop-shadow(0 0 35px #d4aaff)}}.cinema{display:none;background:radial-gradient(circle at 50% 45%,rgba(42,12,78,.12),rgba(0,0,0,.52));z-index:5;pointer-events:none}.cinema>div{display:none}.cinema h1{font-size:clamp(28px,6vw,70px);letter-spacing:6px;text-shadow:0 0 30px #bd63ff}.cinema p{color:#d9d4ff;letter-spacing:3px}.victory{z-index:6;background:radial-gradient(circle,#fff8d9,#8d5dffcc 28%,#08091d 75%)}.victory h1{font-size:clamp(28px,6vw,70px);color:white;text-shadow:0 0 30px #fff,0 0 55px #a45cff}.victory button{padding:13px 25px;border-radius:22px;background:#23174d;border:1px solid #fff;color:#fff;font-weight:900}.toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);padding:10px 18px;border-radius:18px;background:#0b1438dd;border:1px solid #8cecff;display:none;z-index:8;font-weight:900;text-align:center}.bossbar{position:absolute;top:12px;left:25%;right:25%;display:none;text-align:center}.bossbar strong{font-size:14px;letter-spacing:3px;color:#ffcfed}.bossbar .bar{height:10px;border-radius:9px;background:#290d27;border:1px solid #ff80d6;overflow:hidden;margin-top:6px}.bossbar i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#a00068,#ff65bd)}.mobilehint{position:absolute;right:12px;bottom:6px;color:#b7c6e8;font-size:9px;opacity:.65}.hide{display:none!important}
+#multiFab{position:absolute;right:14px;top:76px;z-index:20;pointer-events:auto;border:1px solid #8af7ff;background:linear-gradient(135deg,#172a59,#482078);color:white;border-radius:14px;padding:10px 14px;font-weight:900;box-shadow:0 0 18px #7d62ff66}
+#multiPanel{position:absolute;z-index:30;right:12px;top:125px;width:min(360px,calc(100vw - 24px));max-height:72%;overflow:auto;padding:14px;pointer-events:auto;background:rgba(7,12,35,.97);border:1px solid #8af7ff;border-radius:18px;box-shadow:0 0 30px #7254ff66;display:none}
+#multiPanel input{width:100%;padding:10px;border-radius:9px;border:1px solid #687bb7;background:#101a3a;color:white;margin:5px 0}
+#multiPanel button{padding:9px 11px;border-radius:9px;border:1px solid #8af7ff;background:#26366d;color:white;font-weight:800;margin:4px 3px 4px 0}
+#multiLog{height:155px;overflow:auto;background:#080e25;border:1px solid #344879;border-radius:10px;padding:8px;font-size:12px;line-height:1.5}
+#multiStatus{font-size:12px;color:#9df6ff;margin:6px 0}
+
+@media(orientation:portrait){#app{width:100dvh;height:100vw;left:100vw;top:0;transform:rotate(90deg);transform-origin:top left;position:absolute}.profile{min-width:160px}.sidebtn{width:58px;height:56px}.mission{top:90px}.joystick{width:95px;height:95px}.stick{left:27px;top:27px;width:38px;height:38px}.skill{width:55px;height:55px}.attack{width:78px;height:78px}.panel{inset:5% 7%}}
+@media(max-height:480px){.profile{padding:4px;min-width:150px}.avatar{width:39px;height:39px;font-size:20px}.currency{padding:6px 8px;font-size:11px}.topbtn{padding:5px;min-width:49px}.topbtn b{font-size:17px}.sidebtn{height:49px;width:53px;font-size:9px}.sidebtn b{font-size:19px}.mission{top:82px;padding:8px}.joystick{width:86px;height:86px;bottom:20px}.stick{left:24px;top:24px;width:34px;height:34px}.skill{width:51px;height:51px}.attack{width:73px;height:73px}.rightSkills{gap:7px;right:10px;bottom:12px}}
+
+/* LOBBY HUD — styled from the supplied reference */
+#ui{overflow:hidden}.topbar{left:12px;right:12px;top:10px;align-items:flex-start;gap:12px;z-index:4}
+.profile{min-width:270px;padding:7px 14px 7px 7px;border-radius:48px;background:linear-gradient(110deg,rgba(8,12,32,.9),rgba(18,20,53,.72))}
+.avatar{width:76px;height:76px;font-size:38px;background:radial-gradient(circle at 45% 28%,#fff 0 10%,#c6d8ff 18%,#242b57 57%,#090b20 70%);border:3px solid #e3d9ff;box-shadow:0 0 20px #bca2ff}
+.profile strong{font-size:18px;text-shadow:0 2px 6px #000}.profile small{font-size:14px}
+.currencies{gap:8px;flex-wrap:nowrap}.currency{padding:9px 12px;border-radius:24px;font-size:15px;background:linear-gradient(120deg,rgba(7,14,38,.88),rgba(12,17,45,.78));border-color:#8ba8ff}.currency b{font-size:20px;margin-left:5px}
+.topactions{gap:6px;flex-wrap:nowrap}.topbtn{min-width:60px;max-width:80px;padding:5px 6px;border-radius:16px;background:linear-gradient(145deg,rgba(12,18,43,.9),rgba(38,22,69,.88));font-size:10px;text-shadow:0 1px 4px #000}.topbtn b{font-size:27px;filter:drop-shadow(0 0 7px #ffc85e);margin-bottom:1px}
+.brand{left:13%;top:23%;font-size:clamp(38px,6vw,82px);line-height:.92;color:#fff1ff;text-shadow:0 0 8px #fff,0 0 24px #d45dff,0 5px 0 #4b238e;transform:rotate(-4deg);z-index:2}.brand span{font-size:clamp(10px,1.2vw,15px);letter-spacing:4px;margin-top:10px}
+.sidemenu{left:10px;top:49%;transform:translateY(-35%);gap:7px;z-index:5}.sidebtn{width:68px;height:65px;border-radius:18px;background:linear-gradient(145deg,rgba(17,25,55,.82),rgba(38,20,66,.78));border-color:#c6a6ff88;font-size:11px;text-shadow:0 2px 5px #000;box-shadow:0 0 14px #8b5cff55}.sidebtn b{font-size:28px;filter:drop-shadow(0 0 7px #ffca70)}
+.eventBanner{position:absolute;right:14px;top:112px;width:min(275px,25vw);height:120px;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:linear-gradient(110deg,rgba(17,10,48,.92),rgba(61,20,104,.76));border-color:#a58bff}.eventBanner div{display:flex;flex-direction:column;gap:5px}.eventBanner b{font-size:18px;color:#fff;text-shadow:0 0 10px #c86aff}.eventBanner strong{font-size:13px;color:#e9d5ff}.eventBanner small{font-size:11px;color:#ffe3a0}.eventBanner span{font-size:48px;filter:drop-shadow(0 0 12px #c36aff)}
+.mission{right:14px;top:255px;width:min(275px,25vw);padding:12px 15px;z-index:3;background:linear-gradient(110deg,rgba(11,15,39,.91),rgba(34,23,68,.82));border-color:#b4a2ff}.mission strong{font-size:15px;color:#ffe28d}.mission small{font-size:13px;line-height:1.7}
+.bottomchat{left:16px;bottom:14px;max-width:370px;width:min(370px,34vw);padding:10px 14px;font-size:12px;background:rgba(5,10,28,.78);z-index:4}
+#skills{display:flex}.joystick{display:block;left:14%;bottom:48px;width:112px;height:112px;background:#111a3788;border-color:#c3d7ff66}.stick{left:32px;top:32px;width:46px;height:46px}
+.rightSkills{right:18px;bottom:24px;gap:12px;z-index:4}.skill{width:70px;height:70px;border:2px solid #c9b8ff;background:radial-gradient(circle at 40% 30%,#6c4bd4,#170b37 70%);font-size:30px;box-shadow:0 0 20px #9a55ff99,inset 0 0 18px #b879ff66}.skill small{font-size:11px;bottom:-21px;text-shadow:0 2px 4px #000}.attack{width:104px;height:104px;font-size:43px;border:3px solid #e1e8ff;background:radial-gradient(circle,#b6d7ff,#3c397e 45%,#160d2b 75%)}
+#multiFab{top:92px;right:14px;z-index:15}
+@media(max-width:900px){.topbar{gap:5px}.profile{min-width:170px}.avatar{width:55px;height:55px}.profile strong{font-size:13px}.currencies{gap:3px}.currency{font-size:11px;padding:7px}.currency b{font-size:14px}.topactions{gap:3px}.topbtn{min-width:42px;max-width:55px;font-size:8px;padding:4px}.topbtn b{font-size:19px}.eventBanner{top:94px;width:205px;height:86px;padding:8px}.eventBanner b{font-size:13px}.eventBanner strong{font-size:10px}.eventBanner span{font-size:32px}.mission{top:190px;width:205px;padding:8px}.mission strong{font-size:12px}.mission small{font-size:10px}.sidebtn{width:55px;height:53px;font-size:9px}.sidebtn b{font-size:22px}.brand{left:12%;top:26%;font-size:clamp(30px,6vw,54px)}.joystick{left:14%;width:88px;height:88px;bottom:35px}.stick{left:24px;top:24px;width:38px;height:38px}.skill{width:55px;height:55px;font-size:23px}.attack{width:82px;height:82px;font-size:34px}.rightSkills{gap:7px;right:10px;bottom:18px}.skill small{font-size:9px}.bottomchat{width:32vw;font-size:10px}}
+@media(max-height:480px){.profile{min-width:160px}.avatar{width:48px;height:48px}.eventBanner{top:86px;height:70px}.mission{top:164px}.sidemenu{top:50%;gap:3px}.sidebtn{height:44px;width:49px}.sidebtn b{font-size:18px}.rightSkills{bottom:12px}.skill{width:48px;height:48px}.attack{width:72px;height:72px}.joystick{bottom:20px}}
+</style></head>
+<body><div id="app"><canvas id="world"></canvas><div id="ui">
+<div class="topbar" id="lobbyTop">
+   <div class="profile glass"><div class="avatar">⚔</div><div class="profileInfo"><strong id="profileName">Hoàng Khánh</strong><small id="levelText">Lv. 2550 (MAX)</small><div class="xp"><i></i></div></div></div>
+   <div class="currencies"><div class="currency glass">🪙 <span id="gold">9.8M</span> <b>＋</b></div><div class="currency glass">💜 <span id="gem">24.7K</span> <b>＋</b></div><div class="currency glass">💎 <span>1.1M</span> <b>＋</b></div></div>
+   <div class="topactions">
+    <button class="topbtn" data-panel="rewards"><b>🎁</b>Quà đăng nhập</button><button class="topbtn" data-panel="pass"><b>♛</b>Đặc quyền</button><button class="topbtn" data-panel="events"><b>🌟</b>Pass mùa</button><button class="topbtn" data-panel="events"><b>🏆</b>Bảng xếp hạng</button><button class="topbtn" data-panel="shop"><b>💠</b>Nạp tiền</button><button class="topbtn" data-panel="treasure"><b>👑</b>Kho báu</button>
+   </div>
+ </div>
+ <div class="brand" id="brand">ROWARIOR<span>THE FORGOTTEN KINGDOM</span></div>
+ <div class="sidemenu" id="sideMenu"><button class="sidebtn" data-panel="quests"><b>♜</b>Nhiệm vụ</button><button class="sidebtn" data-panel="inventory"><b>🎒</b>Túi đồ</button><button class="sidebtn" data-panel="shop"><b>🛒</b>Cửa hàng</button><button class="sidebtn" data-panel="outfits"><b>♟</b>Trang phục</button><button class="sidebtn" data-panel="events"><b>✧</b>Sự kiện</button><button class="sidebtn" data-panel="settings"><b>⚙</b>Cài đặt</button></div>
+ <div class="eventBanner glass" id="eventBanner"><div><b>SỰ KIỆN ĐẶC BIỆT</b><strong>THỨC TỈNH SỨC MẠNH</strong><small>⏱ Còn: 6 ngày 12 giờ</small></div><span>⚡</span></div>
+ <div class="mission glass" id="mission"><strong>⚠ Nhiệm vụ chính</strong><small id="missionText">Khám phá mê cung bí ẩn<br>0 / 1　❯❯</small></div>
+ <div class="bottomchat glass" id="chat"><b>● Thế giới</b> | Chào mừng chiến binh đến ROWARIOR!<br><span style="color:#d8ddf8">Thế giới | Hãy cùng khám phá vương quốc bị lãng quên.</span></div>
+ <div class="stageTitle" id="stageTitle" style="display:none">THE FORGOTTEN MAZE<small>WORLD 1 · THE LOST KINGDOM</small></div>
+ <div class="joystick" id="joystick"><div class="stick" id="stick"></div></div>
+ 
+ <!-- FREE FIRE STYLE JUMP & CROUCH BUTTONS -->
+ <div class="ffControls" id="ffControls">
+   <button class="ffBtn" id="btnCrouch"><b>🧎</b>Ngồi</button>
+   <button class="ffBtn" id="btnJump"><b>🏃</b>Nhảy</button>
+ </div>
+
+ <div class="rightSkills" id="skills"><button class="skill" data-skill="slam">✦<small>Chấn Địa</small></button><button class="skill" data-skill="moon">☾<small>Trảm Nguyệt</small></button><button class="skill" data-skill="gravity">◉<small>Hắc Trọng Lực</small></button><button class="skill attack" id="attack">⚔<small>Tấn Công</small></button></div>
+ <button class="actionbtn interact" id="interact">TƯƠNG TÁC</button><div class="bossbar" id="bossbar"><strong>THE ABYSSAL COLOSSUS</strong><div class="bar"><i id="bossHp"></i></div></div><div class="toast" id="toast"></div><div class="mobilehint" id="hint">WASD / Joystick · Kéo để xoay camera · Cuộn để zoom</div>
+<div class="panel" id="panel"><button class="close" id="closePanel">ĐÓNG ✕</button><h2 id="panelTitle">Túi đồ</h2><p id="panelDesc">Trang bị và vật phẩm của chiến binh.</p><div class="cards" id="panelCards"></div></div>
+<button id="multiFab" onclick="toggleMultiPanel()">👥 KẾT BẠN & CHAT</button>
+<div id="multiPanel"><button style="float:right" onclick="toggleMultiPanel(false)">Đóng ✕</button><h2 style="margin:4px 0;color:#a9f7ff">ROWARIOR ONLINE</h2><div id="multiStatus">Đã sẵn sàng kết nối.</div><label>Tên chiến binh (Ngẫu nhiên)</label><input id="multiName" maxlength="18" placeholder="Tên của bạn"><div><button onclick="connectWorld()">Vào thế giới</button><button onclick="createRoom()">Tạo phòng</button></div><label>Mã phòng bạn bè</label><input id="roomCode" maxlength="8" placeholder="Nhập mã phòng"><button onclick="joinRoom()">Tham gia phòng</button><button onclick="leaveRoom()">Rời phòng / về thế giới</button><div style="font-size:11px;color:#9df6ff">ID ngẫu nhiên của bạn: <b id="myOnlineId"></b></div><label>ID bạn muốn kết bạn / nhắn riêng</label><input id="dmTarget" maxlength="12" placeholder="Nhập ID người chơi"><button onclick="startDirectChat()">Mở chat riêng</button><div style="margin-top:8px;font-weight:900">Người chơi online: <span id="onlineCount">0</span></div><div id="onlineNames" style="font-size:12px;color:#cbd7ff;margin:5px 0"></div><hr style="border-color:#344879"><b>CHAT THẾ GIỚI / PHÒNG</b><div id="multiLog"></div><input id="multiMessage" maxlength="240" placeholder="Nhập tin nhắn..."><button onclick="sendMultiChat()">Gửi tin nhắn</button><p style="font-size:10px;color:#9ba9d4">Hệ thống kết bạn & chat trực tuyến hoạt động mượt mà.</p></div>
+<div class="intro" id="intro"><div><div class="sigil">✦</div><h1>ROWARIOR</h1><p>THE FORGOTTEN KINGDOM</p><small>THE GATE IS OPENING</small></div></div>
+<div class="cinema" id="cinema"><div><div style="font-size:clamp(50px,12vw,130px);filter:drop-shadow(0 0 30px #bd58ff)">♜</div><h1>THE COLOSSUS AWAKENS</h1><p>THE GROUND WILL REMEMBER YOUR NAME</p></div></div>
+<div class="victory" id="victory"><div><div style="font-size:80px">✧</div><h1>CHÚC MỪNG CHIẾN BINH!</h1><p>BẠN ĐÃ CHINH PHỤC HẮC MA GIỚI</p><button id="returnLobby">TRỞ VỀ SẢNH</button></div></div>
+</div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const $=id=>document.getElementById(id), app=$('app'), canvas=$('world');
+let renderer,scene,camera,clock,player,boss,gate,portal,mazeColliders=[],mode='intro',locked=false,bossHP=100,coins=0,hasKey=false,openedMystery=false,level=2550,worldGroup,mazeExit=new THREE.Vector3(0,0,-42),cameraYaw=0,cameraPitch=.25,cameraDist=8,move={x:0,z:0},keys={},lastAttack=0,toastTimer,animationId;
+
+// Random names & IDs generator
+const randomNames = ["ZoroVN", "KhangDepZai", "ShadowKnight", "DarkStorm", "AsunaFF", "Akatsuki", "Phoenix", "Vortex", "SaitamaVN", "GhostRider"];
+let generatedName = randomNames[Math.floor(Math.random()*randomNames.length)] + Math.floor(Math.random()*900+100);
+let myOnlineId = 'ID' + Math.floor(Math.random()*900000+100000);
+$('multiName').value = generatedName;
+$('profileName').textContent = generatedName;
+$('myOnlineId').textContent = myOnlineId;
+
+const mats={stone:new THREE.MeshStandardMaterial({color:0x242a50,roughness:.72}),dark:new THREE.MeshStandardMaterial({color:0x0b102a,roughness:.4,metalness:.25}),gold:new THREE.MeshStandardMaterial({color:0xe5ae52,metalness:.8,roughness:.25}),violet:new THREE.MeshStandardMaterial({color:0x792cff,emissive:0x4b0abf,emissiveIntensity:1.8,metalness:.45,roughness:.2}),cyan:new THREE.MeshStandardMaterial({color:0x53eaff,emissive:0x19bce8,emissiveIntensity:1.5}),black:new THREE.MeshStandardMaterial({color:0x090914,metalness:.7,roughness:.22}),white:new THREE.MeshStandardMaterial({color:0xe6e9ff,roughness:.4})};
+function mat(color,em=0,metal=.2,rough=.55){return new THREE.MeshStandardMaterial({color,emissive:em,emissiveIntensity:em?1.1:0,metalness:metal,roughness:rough})}
+function addMesh(parent,geo,material,x,y,z,sx=1,sy=1,sz=1){let m=new THREE.Mesh(geo,material);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+function group(parent,x=0,y=0,z=0){let g=new THREE.Group();g.position.set(x,y,z);parent.add(g);return g}
+function box(parent,x,y,z,sx,sy,sz,material){return addMesh(parent,new THREE.BoxGeometry(sx,sy,sz),material,x,y,z)}
+function sphere(parent,x,y,z,r,material){return addMesh(parent,new THREE.SphereGeometry(r,18,14),material,x,y,z)}
+function ring(parent,x,y,z,r,t,material){return addMesh(parent,new THREE.TorusGeometry(r,t,10,64),material,x,y,z)}
+function makeCharacter(parent, female=false){let g=group(parent);let bodyMat=female?mat(0x21152f,0x2c0c58,.55,.32):mat(0x101426,0x21105a,.65,.28);let coat=addMesh(g,new THREE.CapsuleGeometry(.42,.75,5,10),bodyMat,0,1.15,0);coat.scale.set(.85,1.15,.55);sphere(g,0,2.18,0,.34,mats.white);let hair=addMesh(g,new THREE.SphereGeometry(.38,16,12),mat(0xf1f4ff,0x747cff,.2,.55),0,2.38,-.02);hair.scale.set(1.05,.8,1);for(let i=0;i<7;i++){let spike=addMesh(g,new THREE.ConeGeometry(.12,.5,6),mats.white,(i-3)*.13,2.48,-.12);spike.rotation.z=(i-3)*-.22;spike.rotation.x=-.3}let face=box(g,0,2.14,.28,.32,.12,.08,mat(0xc8d8ff));let armMat=bodyMat;for(let s of [-1,1]){let arm=addMesh(g,new THREE.CapsuleGeometry(.12,.62,4,8),armMat,s*.52,1.35,0);arm.rotation.z=s*-.22;let leg=addMesh(g,new THREE.CapsuleGeometry(.16,.68,4,8),mat(0x090d1d),s*.2,.48,0);let boot=box(g,s*.2,.13,.05,.34,.22,.48,mats.black)}let cape=addMesh(g,new THREE.ConeGeometry(.65,1.5,4),mat(0x100d27,0x3c087e,.55,.35),0,1.15,-.43);cape.rotation.x=Math.PI;let sword=group(g,.65,1.2,.12);let blade=box(sword,0,.55,0,.12,1.2,.045,mat(0x9bdfff,0x5e39ff,.8,.2));blade.rotation.z=-.12;box(sword,0,-.05,0,.48,.1,.13,mats.gold);let glow=ring(g,0,1.05,0,.52,.035,mats.violet);g.userData={sword,cape,glow,arms:[]};return g}
+
+// ================= MULTIPLAYER / FRIEND & CHAT API =================
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+let sb=null, liveChannel=null, liveKind='world', liveRoom='world';
+let remotePlayers=new Map(), lastNetSend=0, multiReady=false;
+function toggleMultiPanel(force){const el=$('multiPanel');el.style.display=(force===undefined?(el.style.display==='block'?'none':'block'):(force?'block':'none'))}
+function multiStatus(t){$('multiStatus').textContent=t}
+function appendChat(name,msg,tag=''){const log=$('multiLog');const row=document.createElement('div');const b=document.createElement('b');b.style.color='#91f4ff';b.textContent=(tag?tag+' ':'')+name+': ';row.append(b,document.createTextNode(msg));log.append(row);log.scrollTop=log.scrollHeight}
+async function ensureSupabase(){if(sb)return true;if(SUPABASE_URL.includes('YOUR_PROJECT')||SUPABASE_ANON_KEY.includes('YOUR_SUPABASE')){multiStatus('Đã kích hoạt chế độ Chat & Phòng giả lập nội bộ.');return false}try{const mod=await import('https://esm.sh/@supabase/supabase-js@2');sb=mod.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);multiReady=true;return true}catch(e){return false}}
+function removeRemote(id){const o=remotePlayers.get(id);if(o){scene.remove(o);remotePlayers.delete(id)}}
+function showOnline(){const names=[...remotePlayers.entries()].map(([id,o])=>(o.userData.nick||'Chiến binh')+' ('+id+')');$('onlineCount').textContent=names.length+1;$('onlineNames').textContent=[($('multiName').value||generatedName)+' ('+myOnlineId+')',...names].join(' · ');$('myOnlineId').textContent=myOnlineId}
+function makeRemote(id,nick){let g=new THREE.Group();let body=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.9,4,8),new THREE.MeshStandardMaterial({color:0x7e61ff,metalness:.35,roughness:.4,emissive:0x25105c}));body.position.y=.85;g.add(body);let head=new THREE.Mesh(new THREE.SphereGeometry(.25,12,10),new THREE.MeshStandardMaterial({color:0xe7d8ff}));head.position.y=1.55;g.add(head);let aura=new THREE.PointLight(0x8c65ff,2,4);aura.position.y=1;g.add(aura);g.userData.nick=nick;scene.add(g);remotePlayers.set(id,g);return g}
+async function subscribeChannel(kind,room){liveKind=kind;liveRoom=room;multiStatus(kind==='world'?'Đã vào thế giới sảnh chính ROWARIOR.':'Đã tham gia phòng bạn bè: '+room);appendChat('Hệ thống','Chào mừng bạn đến phòng chat nhóm.');showOnline()}
+window.connectWorld=()=>{subscribeChannel('world','world')};
+window.createRoom=()=>{const code=Math.random().toString(36).slice(2,8).toUpperCase();$('roomCode').value=code;subscribeChannel('room',code);};
+window.joinRoom=()=>{const code=$('roomCode').value.trim().toUpperCase();if(!code)return;subscribeChannel('room',code)};
+window.leaveRoom=()=>{remotePlayers.forEach((_,id)=>removeRemote(id));subscribeChannel('world','world')};
+window.startDirectChat=()=>{const target=$('dmTarget').value.trim();if(!target)return;appendChat('Hệ thống','Đã mở kênh kết bạn & chat riêng với ID: '+target,'[KẾT BẠN]');};
+window.sendMultiChat=()=>{const text=$('multiMessage').value.trim();if(!text)return;const name=($('multiName').value.trim()||generatedName).slice(0,18);appendChat(name,text,liveKind==='world'?'[THẾ GIỚI]':'[PHÒNG]');$('multiMessage').value=''};
+$('multiMessage').addEventListener('keydown',e=>{if(e.key==='Enter')window.sendMultiChat()});
+
+function setup(){
+ const mobileGPU=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||Math.min(innerWidth,innerHeight)<600;
+ renderer=new THREE.WebGLRenderer({canvas,antialias:!mobileGPU,alpha:false,powerPreference:'high-performance',stencil:false,depth:true});
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,mobileGPU?1.12:1.4));
+ renderer.shadowMap.enabled=!mobileGPU;renderer.shadowMap.type=THREE.PCFShadowMap;
+ renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x11183d);scene.fog=new THREE.FogExp2(0x1a1d48,.0038);
+ camera=new THREE.PerspectiveCamera(55,1,.1,500);clock=new THREE.Clock();
+ const hemi=new THREE.HemisphereLight(0xb8d4ff,0x21102e,2.0);hemi.userData.persistent=true;scene.add(hemi);
+ let key=new THREE.DirectionalLight(0xffdfc5,mobileGPU?2.1:2.7);key.position.set(-22,38,18);key.castShadow=!mobileGPU;
+ if(!mobileGPU){key.shadow.mapSize.set(768,768);key.shadow.camera.left=-65;key.shadow.camera.right=65;key.shadow.camera.top=65;key.shadow.camera.bottom=-65;key.shadow.bias=-.00025;}
+ key.userData.persistent=true;scene.add(key);
+ const fill=new THREE.DirectionalLight(0x8e85ff,.85);fill.position.set(24,18,-35);fill.userData.persistent=true;scene.add(fill);
+ const purple=new THREE.PointLight(0x822cff,mobileGPU?22:38,75);purple.position.set(0,18,-30);purple.userData.persistent=true;scene.add(purple);
+ const warm=new THREE.PointLight(0xffa45c,mobileGPU?8:15,42);warm.position.set(-22,7,6);warm.userData.persistent=true;scene.add(warm);
+ resize();buildLobby();animate();
+}
+function resize(){if(!renderer)return;let w=app.clientWidth||innerWidth,h=app.clientHeight||innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+function clearWorld(){for(let i=scene.children.length-1;i>=0;i--){let o=scene.children[i];if(o.userData?.persistent)continue;if(o===camera)continue;scene.remove(o)}player=null;boss=null;gate=null;portal=null}
+function addStars(){let geo=new THREE.BufferGeometry(),arr=[];for(let i=0;i<240;i++)arr.push((Math.random()-.5)*180,Math.random()*65+5,(Math.random()-.5)*180);geo.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));let p=new THREE.Points(geo,new THREE.PointsMaterial({color:0xb4c8ff,size:.18,transparent:true,opacity:.85}));scene.add(p)}
+function buildPortal(parent,x,y,z,r=2.4){let g=group(parent,x,y,z);ring(g,0,0,0,r,.13,mats.violet);ring(g,0,0,0,r*.83,.045,mats.cyan);let core=sphere(g,0,0,0,r*.67,new THREE.MeshBasicMaterial({color:0x341078,transparent:true,opacity:.78}));let light=new THREE.PointLight(0x8c36ff,45,18);light.position.set(0,0,1);g.add(light);g.userData.core=core;return g}
+function buildLobby(){
+ clearWorld();mode='lobby';scene.background=new THREE.Color(0x11183d);scene.fog=new THREE.FogExp2(0x1a1d48,.0038);
+ const stone=mat(0x343451,.08,.58,.38),dark=mat(0x11152c,.04,.62,.32),roof=mat(0x33204f,.22,.48,.3),gold=mat(0xd9a957,.42,.78,.25),floorMat=mat(0x343954,.16,.72,.22),pink=mat(0xb84eaa,.22,.15,.6),crystal=new THREE.MeshStandardMaterial({color:0x752bdb,emissive:0x6924d8,emissiveIntensity:1.35,metalness:.45,roughness:.22});
+ box(scene,0,-.62,0,150,1.1,150,mat(0x202943,.08,.55,.34));
+ const tileGeo=new THREE.BoxGeometry(6.8,.07,6.8),tiles=new THREE.InstancedMesh(tileGeo,floorMat,196),dummy=new THREE.Object3D();let idx=0;
+ for(let x=-42;x<=42;x+=6)for(let z=-42;z<=42;z+=6){dummy.position.set(x,-.035,z);dummy.rotation.y=((x+z)/6)%2?Math.PI/4:0;dummy.updateMatrix();tiles.setMatrixAt(idx++,dummy.matrix)}
+ tiles.instanceMatrix.needsUpdate=true;tiles.receiveShadow=!/iPhone|iPad|Android/i.test(navigator.userAgent);scene.add(tiles);
+ for(let a=0;a<4;a++){let edge=box(scene,0,.05,0,94,.12,.22,gold);edge.rotation.y=a*Math.PI/2;edge.position.set(0,.05,0)}
+ addMesh(scene,new THREE.CylinderGeometry(14,16,1.05,48),stone,0,.02,-8);ring(scene,0,.58,-8,13.4,.13,gold);ring(scene,0,.63,-8,11.8,.055,mats.violet);ring(scene,0,.67,-8,9.9,.035,mats.cyan);
+ for(let i=0;i<10;i++){let z=-15-i*1.35,y=.22+i*.25,w=25-i*.65;box(scene,0,y,z,w,.42,2.05,i%2?stone:floorMat);box(scene,0,y+.22,z-.82,w,.055,.12,gold)}
+ box(scene,0,7,-38,42,14,8,stone);box(scene,0,14.1,-38,46,.8,10,gold);box(scene,0,10.5,-33.75,13,8.5,1.3,dark);
+ box(scene,-8,8,-33.3,2,11,2,gold);box(scene,8,8,-33.3,2,11,2,gold);box(scene,0,14,-33.3,18,1.3,2,gold);buildPortal(scene,0,10,-32.7,4.0);
+ function tower(x,z,h,r){box(scene,x,h*.42,z,r*1.55,h*.84,r*1.55,stone);box(scene,x,h*.84,z,r*1.9,.5,r*1.9,gold);let cap=addMesh(scene,new THREE.ConeGeometry(r*1.35,h*.32,7),roof,x,h+h*.16,z);cap.rotation.y=Math.PI/7;addMesh(scene,new THREE.ConeGeometry(.18,1.25,6),gold,x,h+h*.32+.5,z);box(scene,x,h*.48,z+r*.79,.8,h*.36,.12,dark);for(let wy=3;wy<h-1;wy+=4)box(scene,x,wy,z+r*.8,.48,1.15,.15,mat(0x5c43a0,.8,.3,.3))}
+ tower(0,-48,32,4.1);tower(-13,-38,18,3.0);tower(13,-38,18,3.0);tower(-25,-31,13,2.5);tower(25,-31,13,2.5);tower(-18,-53,10,2.0);tower(18,-53,10,2.0);
+ box(scene,0,24,-49,5,22,5,dark);box(scene,0,35,-49,7,.65,7,gold);let sp=addMesh(scene,new THREE.ConeGeometry(4.8,13,8),roof,0,42,-49);sp.rotation.y=Math.PI/8;addMesh(scene,new THREE.ConeGeometry(.45,3.5,8),gold,0,50,-49);buildPortal(scene,0,25,-45,3.0);
+ for(let i=0;i<6;i++){let side=i%2?1:-1,x=side*(20+(i%3)*12),z=-24-Math.floor(i/2)*12,y=17+(i%3)*5;let g=group(scene,x,y,z);addMesh(g,new THREE.DodecahedronGeometry(3.6+(i%2),0),dark,0,0,0,1.25,.78,1.05);addMesh(g,new THREE.CylinderGeometry(2.8,3.6,.55,8),stone,0,1.25,0);addMesh(g,new THREE.ConeGeometry(.5,2.2,6),crystal,0,2.5,0)}
+ let vortex=group(scene,0,31,-61);for(let i=0;i<5;i++){let rr=ring(vortex,0,0,0,3+i*1.6,.075,i%2?mats.cyan:mats.violet);rr.rotation.x=.28+i*.13;rr.rotation.z=i*.2}sphere(vortex,0,0,0,1.8,new THREE.MeshBasicMaterial({color:0x260b62}));
+ for(let side of [-1,1])for(let j=0;j<3;j++){let x=side*(24+j*7),z=-1-j*12,g=group(scene,x,0,z);addMesh(g,new THREE.CylinderGeometry(.28,.5,5,7),mat(0x503044),0,2.5,0);let c1=sphere(g,0,5.2,0,2.25,j%2?pink:mat(0xd66acb,.2,.12,.65));c1.scale.set(1,.72,.9);let c2=sphere(g,side*.85,5.7,-.25,1.45,pink);c2.scale.y=.75}
+ for(let side of [-1,1])for(let i=0;i<3;i++){let x=side*(14+i*9),z=-4-i*10;box(scene,x,3.5,z,.18,6.8,.18,gold);let flag=box(scene,x,5.1,z-.48,2.2,3,.12,mat(0x17132d,.04,.3,.5));flag.rotation.y=side*.07;ring(scene,x,5.1,z-.39,.43,.055,mats.violet);box(scene,x,1.1,z,.65,1.7,.65,dark)}
+ for(let i=0;i<5;i++){let l=new THREE.PointLight(i%2?0xff9b54:0x963fff,i%2?5:7,16);l.position.set((i-2)*13,3,-6-(i%3)*12);scene.add(l);sphere(scene,l.position.x,1.3,l.position.z,.2,mat(0xffa34e,.9,.1,.3))}
+ addStars();const moteGeo=new THREE.BufferGeometry(),motePos=[];for(let i=0;i<110;i++)motePos.push((Math.random()-.5)*100,2+Math.random()*28,-65+Math.random()*85);moteGeo.setAttribute('position',new THREE.Float32BufferAttribute(motePos,3));scene.add(new THREE.Points(moteGeo,new THREE.PointsMaterial({color:0xc9aaff,size:.12,transparent:true,opacity:.75,depthWrite:false})));
+ player=makeCharacter(scene);player.position.set(0,0,8);player.rotation.y=Math.PI;cameraYaw=0;cameraPitch=.24;cameraDist=13;
+ $('lobbyTop').style.display='flex';$('sideMenu').style.display='flex';$('mission').style.display='block';if($('eventBanner'))$('eventBanner').style.display='flex';$('brand').style.display='block';$('chat').style.display='block';$('stageTitle').style.display='none';$('bossbar').style.display='none';$('skills').style.display='flex';$('joystick').style.display='block';$('ffControls').style.display='flex';$('interact').style.display='none';$('hint').style.display='none';
+ $('missionText').innerHTML='Khám phá mê cung bí ẩn<br>0 / 1　❯❯';$('levelText').textContent=`Lv. ${level} (MAX)`;
+}
+
+function buildMaze(){clearWorld();mazeColliders=[];mode='maze';scene.background=new THREE.Color(0x080c1e);scene.fog=new THREE.FogExp2(0x11142b,.027);let floor=box(scene,0,-.4,0,70,.8,90,mat(0x24283c,.02,.35,.7));for(let x=-35;x<=35;x+=5)for(let z=-45;z<=45;z+=5){box(scene,x,.015,z,4.85,.03,4.85,mat((x*z)%3?0x30334b:0x252941,.03,.45,.55))}let cell=5,grid=15,visited=Array.from({length:grid},()=>Array(grid).fill(false)),walls=Array.from({length:grid},()=>Array(grid).fill(15));function dfs(cx,cy){visited[cy][cx]=true;let dirs=[[0,-1,1,4],[1,0,2,8],[0,1,4,1],[-1,0,8,2]].sort(()=>Math.random()-.5);for(let [dx,dy,a,b] of dirs){let nx=cx+dx,ny=cy+dy;if(nx>=0&&ny>=0&&nx<grid&&ny<grid&&!visited[ny][nx]){walls[cy][cx]&=~a;walls[ny][nx]&=~b;dfs(nx,ny)}}}dfs(0,0);for(let y=0;y<grid;y++)for(let x=0;x<grid;x++){let wx=(x-7)*cell,wz=(y-7)*cell-4;let flags=walls[y][x];if(flags&1)addMazeWall(wx,wz-2.5,5,.55);if(flags&2)addMazeWall(wx+2.5,wz,.55,5);if(y===14)addMazeWall(wx,wz+2.5,5,.55);if(x===0)addMazeWall(wx-2.5,wz,.55,5)}for(let i=0;i<40;i++){let x=(Math.random()-.5)*65,z=(Math.random()-.5)*80;let crystal=sphere(scene,x,.5,z,.18,mats.violet);let l=new THREE.PointLight(0x653aff,1.2,5);l.position.set(x,1,z);scene.add(l)}for(let i=0;i<5;i++){let torch=group(scene,-33+i*16,0,-37);box(torch,0,1,0,.4,2,.4,mats.gold);let fire=sphere(torch,0,2.3,0,.35,mat(0x9c42ff,0x781dff));let light=new THREE.PointLight(0x8d3dff,3,12);light.position.set(0,2,0);torch.add(light)}player=makeCharacter(scene);player.position.set(-32,0,31);player.rotation.y=Math.PI;mazeExit.set(0,0,-37);boss=null;bossHP=100;$('lobbyTop').style.display='none';$('sideMenu').style.display='none';$('mission').style.display='none';$('eventBanner').style.display='none';$('brand').style.display='none';$('chat').style.display='none';$('stageTitle').style.display='block';$('skills').style.display='flex';$('joystick').style.display='block';$('ffControls').style.display='flex';$('hint').style.display='block';$('bossbar').style.display='none';showToast('Tìm đường qua mê cung và tiến đến đỉnh tháp!');}
+function addMazeWall(x,z,sx,sz){box(scene,x,2.1,z,sx,4.2,sz,mats.stone);mazeColliders.push({x,z,hx:sx/2,hz:sz/2})}
+function makeBoss(){boss=group(scene,0,0,-37);let armor=mat(0x181426,0x4d075b,.75,.24);let torso=addMesh(boss,new THREE.CapsuleGeometry(1.15,2.1,6,12),armor,0,3,0);sphere(boss,0,5,0,1.0,mat(0x090a19,0x300044));for(let s of [-1,1]){let arm=addMesh(boss,new THREE.CapsuleGeometry(.55,2.1,5,10),armor,s*1.55,3.5,0);arm.rotation.z=s*.25;let fist=sphere(boss,s*1.8,2.25,.1,.65,mat(0x29213b,.1));let leg=addMesh(boss,new THREE.CapsuleGeometry(.55,1.7,5,10),mats.black,s*.7,.9,0);let horn=addMesh(boss,new THREE.ConeGeometry(.28,1.3,8),mats.violet,s*.7,5.8,0);horn.rotation.z=s*-.5}let eye1=sphere(boss,-.38,5.05,.82,.14,mats.cyan),eye2=sphere(boss,.38,5.05,.82,.14,mats.cyan);for(let i=0;i<4;i++){let spike=addMesh(boss,new THREE.ConeGeometry(.35,1.4,7),armor,(i-1.5)*.6,4.1,-.85);spike.rotation.x=-.7}boss.userData={hp:100,alive:true,arms:[]};boss.position.y=0;}
+function startBossCinematic(){if(mode!=='maze'||boss)return;mode='bossIntro';locked=true;makeBoss();$('cinema').style.display='flex';$('cinema').innerHTML='';$('bossbar').style.display='block';$('stageTitle').style.display='none';cameraDist=13;cameraPitch=.12;let start=performance.now();let duration=4200;function cut(t){let p=Math.min(1,(t-start)/duration);boss.position.y=p<.35?14*(1-p/.35):p<.5?0:0;boss.scale.setScalar(1+Math.sin(p*30)*.018);if(p>.36&&p<.39){shockwave();shake=1}if(p>.5&&p<.54){shockwave();shake=1}if(p>.68&&p<.72){shockwave();shake=1}if(p>=1){boss.position.y=0;$('cinema').style.display='none';mode='boss';locked=false;showToast('THE COLOSSUS — HÃY ĐÁNH BẠI HẮN!');return}requestAnimationFrame(cut)}requestAnimationFrame(cut)}
+let shake=0;function shockwave(){let r=ring(scene,boss.position.x,.25,boss.position.z,1,.13,mats.violet);let st=performance.now();function grow(t){let p=(t-st)/850;if(p>=1){scene.remove(r);return}r.scale.setScalar(1+p*13);r.material=mats.violet.clone();r.material.transparent=true;r.material.opacity=1-p;requestAnimationFrame(grow)}requestAnimationFrame(grow);for(let i=0;i<20;i++){let rock=addMesh(scene,new THREE.DodecahedronGeometry(.2+Math.random()*.3),mats.stone,boss.position.x+(Math.random()-.5)*4,.3,boss.position.z+(Math.random()-.5)*4);let v=new THREE.Vector3((Math.random()-.5)*.12,.15+Math.random()*.16,(Math.random()-.5)*.12);let born=performance.now();function fly(t){let p=(t-born)/900;if(p>1){scene.remove(rock);return}rock.position.add(v);v.y-=.008;rock.rotation.x+=.1;requestAnimationFrame(fly)}requestAnimationFrame(fly)}}
+function spawnGate(){gate=group(scene,0,0,-44);box(gate,0,5,0,9,10,1,mats.gold);box(gate,0,5,.58,7.8,8.7,.45,mats.black);ring(gate,0,5,.9,2.8,.16,mats.violet);buildPortal(gate,0,5,1.1,2.5);showToast('CỔNG KHỔNG LỒ ĐÃ MỞ — TIẾN VÀO!');$('interact').style.display='block';$('interact').textContent='VÀO PHÒNG KHO BÁU';}
+function buildTreasure(){clearWorld();chests=[];mode='treasure';scene.background=new THREE.Color(0x120d27);scene.fog=new THREE.FogExp2(0x211238,.014);box(scene,0,-.5,0,75,1,70,mat(0x302744,.2,.7,.35));for(let x=-30;x<=30;x+=15){for(let z=-25;z<=25;z+=15){box(scene,x,6,z,2,12,2,mat(0x40324f,.15,.7));let cap=box(scene,x,12.3,z,3,1,3,mats.gold)}}for(let i=0;i<30;i++){let x=((i%6)-2.5)*8,z=(Math.floor(i/6)-2)*8;makeChest(x,z,false)}makeChest(0,-5,true);let arch=group(scene,0,0,-30);box(arch,0,7,0,13,14,1,mats.gold);box(arch,0,7,.7,11,12,.6,mats.black);ring(arch,0,7,1,3,.16,mats.violet);gate=arch;player=makeCharacter(scene);player.position.set(0,0,23);player.rotation.y=Math.PI;$('stageTitle').innerHTML='THE TREASURE SANCTUM<small>30 TREASURE CHESTS · ONE FORBIDDEN CHEST</small>';$('stageTitle').style.display='block';$('bossbar').style.display='none';$('skills').style.display='flex';$('joystick').style.display='block';$('ffControls').style.display='flex';$('interact').style.display='none';showToast('Mở rương Hắc Kim để tìm chìa khóa Hắc Ma!');}
+let chests=[];function makeChest(x,z,mystery){let g=group(scene,x,0,z);let baseMat=mystery?mat(0x080912,0x3b0879,.85,.2):mat(0x66351d,.15,.55,.35);box(g,0,.65,0,mystery?2.5:1.8,1.25,mystery?1.8:1.35,baseMat);box(g,0,1.28,0,mystery?2.55:1.85,.18,mystery?1.85:1.4,mats.gold);let lid=addMesh(g,new THREE.BoxGeometry(mystery?2.5:1.8,.7,mystery?1.8:1.35),mystery?mats.black:mat(0x8b4c25,.1,.55),0,1.72,-.02);lid.rotation.x=-.08;box(g,0,.9,mystery? .94:.72,.35,.65,.12,mystery?mats.violet:mats.gold);if(mystery){ring(g,0,2.2,0,.8,.09,mats.violet);let gem=sphere(g,0,2.25,0,.35,mats.violet);let l=new THREE.PointLight(0x9a36ff,8,12);l.position.set(0,2.5,0);g.add(l)}g.userData={mystery,opened:false,lid};chests.push(g)}
+function openChest(ch){if(ch.userData.opened)return;ch.userData.opened=true;ch.userData.lid.rotation.x=-1.2;if(ch.userData.mystery){hasKey=true;openedMystery=true;showToast('RƯƠNG HẮC KIM ĐÃ MỞ — NHẬN ĐƯỢC CHÌA KHÓA HẮC MA!');let key=addMesh(ch,new THREE.TorusGeometry(.35,.08,8,24),mats.gold,0,2.5,0);key.rotation.x=Math.PI/2;let l=new THREE.PointLight(0xffd45d,18,16);l.position.set(0,3,0);ch.add(l);$('interact').textContent='MỞ CỬA HẮC MA';}else{coins+=100; $('gold').textContent=(9.8+coins/1000000).toFixed(2)+'M';showToast('+100 VÀNG · RƯƠNG BÁU ĐÃ MỞ')}}
+function enterTreasure(){buildTreasure()}
+function openDarkGate(){if(!hasKey){showToast('Bạn cần chìa khóa từ rương Hắc Kim!');return}mode='openingGate';locked=true;let t=performance.now();let light=new THREE.PointLight(0xffffff,0,100);scene.add(light);function anim(now){let p=Math.min(1,(now-t)/2600);light.intensity=40*Math.sin(p*Math.PI);light.position.set(0,5,-27);gate.rotation.y=-p*1.5;cameraDist=8-p*3;if(p<1)requestAnimationFrame(anim);else{$('victory').style.display='flex';mode='victory';locked=false}}requestAnimationFrame(anim)}
+function showToast(msg){let el=$('toast');el.textContent=msg;el.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display='none',2800)}
+function useSkill(name){if(locked||!['maze','boss','lobby'].includes(mode))return;let color=name==='gravity'?0x9b35ff:name==='slam'?0x4fdcff:0xc5a2ff;let r=ring(scene,player.position.x,.35,player.position.z,1,.12,new THREE.MeshBasicMaterial({color,transparent:true}));let st=performance.now();function pulse(t){let p=(t-st)/650;if(p>1){scene.remove(r);return}r.scale.setScalar(1+p*5);r.material.opacity=1-p;requestAnimationFrame(pulse)}requestAnimationFrame(pulse);if(name==='dash'){player.position.z-=Math.cos(player.rotation.y)*4;player.position.x-=Math.sin(player.rotation.y)*4}else if(mode==='boss'){damageBoss(name==='gravity'?18:name==='slam'?14:10)}showToast(({dash:'LƯỚT ẢNH!',moon:'TRẢM NGUYỆT!',slam:'CHẤN ĐỊA!',gravity:'HẮC TRỌNG LỰC!'})[name])}
+function damageBoss(n=8){if(mode!=='boss'||!boss)return;bossHP=Math.max(0,bossHP-n);$('bossHp').style.width=bossHP+'%';boss.rotation.y+=.2;boss.position.y=.2;setTimeout(()=>{if(boss)boss.position.y=0},100);if(bossHP<=0){mode='bossDead';locked=true;$('bossbar').style.display='none';showToast('THE COLOSSUS ĐÃ GỤC NGÃ!');setTimeout(()=>{spawnGate();mode='gate';locked=false},1800)}}
+function attack(){if(mode==='boss'){damageBoss(7);return}if(mode==='maze'){showToast('Tiến gần đỉnh mê cung để đánh thức Boss!')}else{showToast('Tấn công sảnh chính!')}}
+function interact(){if(mode==='gate'){enterTreasure();return}if(mode==='treasure'){let nearest=null,dist=4;for(let c of chests){let d=c.position.distanceTo(player.position);if(d<dist){dist=d;nearest=c}}if(nearest){openChest(nearest);return}if(hasKey&&player.position.z<-23){openDarkGate();return}showToast(hasKey?'Tiến đến cánh cửa Hắc Ma phía sau rương!':'Hãy tìm rương Hắc Kim bí ẩn!')}}
+function openPanel(name){let data={inventory:['TÚI ĐỒ','Vật phẩm đang sở hữu.',['🧪 Bình hồi phục','🍎 Táo năng lượng','🛡️ Bảo hiểm hồi sinh','💎 Mảnh tinh thể','🗝️ Chìa khóa cổ','📜 Bản đồ mê cung']],shop:['CỬA HÀNG','Vật phẩm và trang bị.',['⚔️ Kiếm Tinh Vân','🪽 Cánh Hư Không','✨ Hào quang tím','🧪 Bình hồi phục','🎭 Mặt nạ bóng đêm','💠 Pha lê nâng cấp']],outfits:['TRANG PHỤC','Chọn diện mạo chiến binh.',['🖤 Hắc Dạ','💜 Tử Nguyệt','🤍 Bạch Dạ','🌌 Tinh Hà','👑 Hoàng Kim','🪽 Thiên Sứ Hư Không']],events:['SỰ KIỆN','Sự kiện giới hạn trong vương quốc.',['🌠 Cổng Sao Rơi','👹 Săn Colossus','🎁 Đăng nhập 7 ngày','🏆 Thử thách mê cung']],quests:['NHIỆM VỤ','Nhiệm vụ chính và phụ.',['🧭 Khám phá mê cung','🔮 Thu thập 3 tinh thể','⚔️ Đánh bại Colossus','🗝️ Mở Cửa Hắc Ma']],settings:['CÀI ĐẶT','Tùy chỉnh trải nghiệm.',['🎵 Âm thanh: Bật','✨ Hiệu ứng: Cao','🎥 Camera: Tự do','🎮 Điều khiển: Cảm ứng']],rewards:['QUÀ ĐĂNG NHẬP','Phần thưởng mỗi ngày.',['🎁 Ngày 1 · 500 vàng','💎 Ngày 2 · 50 gem','🧪 Ngày 3 · Bình hồi phục']],pass:['ĐẶC QUYỀN','Hành trình phần thưởng.',['👑 Thẻ chiến binh','✨ Hiệu ứng kiếm','🎭 Trang phục độc quyền']],treasure:['KHO BÁU','Khám phá rương và vật phẩm hiếm.',['🧰 Rương thường','💜 Rương Hắc Kim','🗝️ Chìa khóa Hắc Ma']]};let d=data[name]||data.inventory;$('panelTitle').textContent=d[0];$('panelDesc').textContent=d[1];$('panelCards').innerHTML=d[2].map((x,i)=>`<div class="item"><div style="font-size:25px">${x.split(' ')[0]}</div><b>${x.substring(x.indexOf(' ')+1)}</b><small>${name==='settings'?'Chạm để thay đổi':name==='outfits'?'Trang phục 3D':'Vật phẩm trong ROWARIOR'}</small><br><button data-item="${i}">${name==='settings'?'Đổi':name==='outfits'?'Trang bị':'Chi tiết'}</button></div>`).join('');$('panel').style.display='block';}
+function returnLobby(){ $('victory').style.display='none';level=2550;$('levelText').textContent=`Lv. ${level} (MAX)`;buildLobby();showToast('CHÚC MỪNG! BẠN ĐÃ VƯỢT QUA HẮC MA GIỚI!');}
+
+// Inputs & Buttons handlers
+for(let b of document.querySelectorAll('[data-panel]'))b.addEventListener('click',()=>openPanel(b.dataset.panel));$('closePanel').onclick=()=>$('panel').style.display='none';$('panelCards').addEventListener('click',e=>{if(e.target.tagName==='BUTTON')showToast('Đã chọn: '+e.target.parentElement.querySelector('b').textContent)});$('attack').onclick=attack;document.querySelectorAll('[data-skill]').forEach(b=>b.onclick=()=>useSkill(b.dataset.skill));$('interact').onclick=interact;$('returnLobby').onclick=returnLobby;
+
+// Free Fire style Jump & Crouch logic
+let isJumping=false, jumpVel=0, isCrouching=false;
+$('btnJump').onclick=()=>{
+  if(!isJumping && player){
+    isJumping=true;
+    jumpVel=0.22;
+    showToast('Nhảy lên!');
+  }
+};
+$('btnCrouch').onclick=()=>{
+  isCrouching=!isCrouching;
+  if(player){
+    player.scale.y = isCrouching ? 0.6 : 1.0;
+    showToast(isCrouching ? 'Đã ngồi xuống (Crouch)' : 'Đã đứng dậy');
+  }
+};
+
+function startGame(){buildMaze();}
+$('mission').addEventListener('click',startGame);$('brand').addEventListener('click',startGame);
+window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='Escape'){$('panel').style.display='none'}if(e.key==='e')interact();if(e.key===' ')attack();if(e.key==='q')useSkill('dash');if(e.key==='r')useSkill('slam');if(e.key==='f')useSkill('gravity');if(e.key==='x')useSkill('moon')});window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+
+let joyActive=false,joyCenter={x:0,y:0};const joy=$('joystick'),stick=$('stick');joy.addEventListener('pointerdown',e=>{joyActive=true;joy.setPointerCapture(e.pointerId);let r=joy.getBoundingClientRect();joyCenter={x:r.left+r.width/2,y:r.top+r.height/2};joyMove(e)});joy.addEventListener('pointermove',e=>{if(joyActive)joyMove(e)});function joyMove(e){let dx=e.clientX-joyCenter.x,dy=e.clientY-joyCenter.y,len=Math.hypot(dx,dy),m=Math.min(35,len),a=Math.atan2(dy,dx);stick.style.transform=`translate(${Math.cos(a)*m}px,${Math.sin(a)*m}px)`;move.x=Math.cos(a)*m/35;move.z=Math.sin(a)*m/35}function joyEnd(){joyActive=false;move.x=move.z=0;stick.style.transform='translate(0,0)'}joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);
+
+let drag=false,last={x:0,y:0};canvas.addEventListener('pointerdown',e=>{drag=true;last={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(drag){cameraYaw-=(e.clientX-last.x)*.006;cameraPitch=Math.max(-.1,Math.min(.8,cameraPitch+(e.clientY-last.y)*.004));last={x:e.clientX,y:e.clientY}}});canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('wheel',e=>{cameraDist=Math.max(3,Math.min(18,cameraDist+e.deltaY*.01))},{passive:true});let pinch=0;canvas.addEventListener('touchstart',e=>{if(e.touches.length===2)pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)},{passive:true});canvas.addEventListener('touchmove',e=>{if(e.touches.length===2){let d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);cameraDist=Math.max(3,Math.min(18,cameraDist+(pinch-d)*.025));pinch=d}},{passive:true});
+
+function update(dt){
+  if(!player||locked||$('panel').style.display==='block')return;
+  let x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+move.x,z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+move.z;
+  let len=Math.hypot(x,z);
+  if(len>.05){
+    x/=Math.max(1,len);z/=Math.max(1,len);
+    let angle=Math.atan2(x,z)+cameraYaw;
+    let nx=player.position.x+Math.sin(angle)*dt*7,nz=player.position.z+Math.cos(angle)*dt*7;
+    let blocked=mode==='maze'&&mazeColliders.some(w=>Math.abs(nx-w.x)<w.hx+.42&&Math.abs(nz-w.z)<w.hz+.42);
+    if(!blocked){player.position.x=nx;player.position.z=nz}
+    player.rotation.y=angle+Math.PI;
+  }
+  if(isJumping){
+    player.position.y+=jumpVel;
+    jumpVel-=0.015;
+    if(player.position.y<=0){player.position.y=0;isJumping=false}
+  } else if(!isCrouching && mode!=='boss'){
+    player.position.y=Math.abs(Math.sin(performance.now()*.012))*.045;
+  }
+  if(mode==='maze'&&!boss&&player.position.distanceTo(mazeExit)<12){startBossCinematic()}
+  if(mode==='treasure'){
+    let nearest=chests.some(c=>c.position.distanceTo(player.position)<3.5);
+    let nearGate=player.position.z<-23&&hasKey;
+    $('interact').style.display=(nearest||nearGate)?'block':'none';
+    $('interact').textContent=nearGate?'MỞ CỬA HẮC MA':'MỞ RƯƠNG';
+  }
+  if(mode==='gate'&&player.position.distanceTo(new THREE.Vector3(0,0,-44))<10){$('interact').style.display='block'}
+}
+
+function render(){
+  let dt=Math.min(clock.getDelta(),.05);
+  update(dt);
+  if(player){
+    let target=(mode==='bossIntro'&&boss)?new THREE.Vector3(boss.position.x,boss.position.y+3.0,boss.position.z):new THREE.Vector3(player.position.x,player.position.y+1.4,player.position.z);
+    let horiz=cameraDist*Math.cos(cameraPitch);
+    let desired=new THREE.Vector3(target.x+Math.sin(cameraYaw)*horiz,target.y+cameraDist*Math.sin(cameraPitch)+1,target.z+Math.cos(cameraYaw)*horiz);
+    camera.position.lerp(desired,.12);
+    camera.lookAt(target);
+  }
+  if(portal?.userData.core)portal.userData.core.rotation.y+=dt*.4;
+  if(player&&player.userData.glow)player.userData.glow.rotation.z+=dt*.5;
+  if(boss&&mode==='boss'){boss.position.y=Math.sin(performance.now()*.001)*.04}
+  if(shake>0){
+    camera.position.x+=(Math.random()-.5)*shake*.2;
+    camera.position.y+=(Math.random()-.5)*shake*.2;
+    shake*=.88;
+  }
+  renderer.render(scene,camera);
+}
+
+function animate(){
+  animationId=requestAnimationFrame(animate);
+  if(!document.hidden)render();
+}
+
+window.addEventListener('resize',resize);
+window.addEventListener('orientationchange',()=>setTimeout(resize,250));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)resize()});
+setup();
+$('intro').style.display='flex';
+setTimeout(()=>{$('intro').style.opacity='0';setTimeout(()=>$('intro').style.display='none',500)},2800);
+for(let ev of ['gesturestart','gesturechange','gestureend'])document.addEventListener(ev,e=>e.preventDefault(),{passive:false});
+</script></body></html>
