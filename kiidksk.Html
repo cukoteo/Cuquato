@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ROWARIOR - The Forgotten Kingdom (Ultra 3D ProMax v4)</title>
+<style>
+  :root {
+    --gold: #f3d285;
+    --gold-bright: #ffeaa7;
+    --gold-dark: #9c7538;
+    --glass: rgba(11, 17, 29, 0.88);
+    --glass-border: rgba(243, 210, 133, 0.45);
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  html, body { width:100%; height:100%; min-height:100%; }
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #03050a;
+    color: #fff;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    touch-action: none;
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  button {
+    background: linear-gradient(145deg, #c99b42, #6e4c1e);
+    border: 1px solid var(--gold);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    transition: transform 0.1s ease, filter 0.15s ease;
+  }
+  button:active {
+    transform: scale(0.93);
+    filter: brightness(1.2);
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Màn hình Khởi Động & Bắt Buộc Ngang (FreeFire / Arena of Valor Style) */
+  #startScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: radial-gradient(circle at center, #1b2845 0%, #03050a 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    transition: opacity 0.5s ease;
+  }
+  #startScreen h1 {
+    font: bold clamp(36px, 7vw, 68px) Georgia, serif;
+    letter-spacing: 6px;
+    color: var(--gold);
+    margin: 0 0 10px;
+    text-shadow: 0 0 35px rgba(243, 210, 133, 0.65);
+    animation: pulseTitle 2s infinite ease-in-out;
+  }
+  @keyframes pulseTitle {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(243,210,133,0.4)); }
+    50% { transform: scale(1.02); filter: drop-shadow(0 0 28px rgba(243,210,133,0.85)); }
+  }
+  #startScreen p {
+    color: #cbd5e1;
+    font-size: clamp(13px, 2vw, 16px);
+    max-width: 550px;
+    line-height: 1.5;
+    margin: 0 0 24px;
+  }
+  .launch-btn {
+    font-size: 20px;
+    padding: 14px 42px;
+    background: linear-gradient(135deg, #f39c12, #d35400);
+    border: 2px solid #fff;
+    border-radius: 50px;
+    box-shadow: 0 0 30px rgba(243, 156, 18, 0.7);
+    animation: glowLaunch 1.8s infinite ease-in-out;
+  }
+  @keyframes glowLaunch {
+    0%, 100% { box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(243, 156, 18, 0.95); }
+  }
+
+  /* Overlay Xoay Màn Hình */
+  #rotateOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    background: #03050a;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+  }
+  @media (orientation: portrait) and (max-width: 950px) {
+    #rotateOverlay { display: flex !important; }
+    #appViewport { display: none !important; }
+  }
+  #rotateOverlay { background:radial-gradient(circle at 50% 35%,#172a4d,#03050a 72%); }
+  #rotateOverlay .rotate-card { padding:24px 30px; border:1px solid #e8c875; border-radius:20px; background:#07101feF; box-shadow:0 0 45px #d5a84b35; }
+  #bossBarWrap { position:fixed; z-index:24; top:84px; left:50%; transform:translateX(-50%); width:min(440px,58vw); display:none; pointer-events:none; text-align:center; }
+  #bossBarWrap.show { display:block; }
+  #bossBarTitle { font:900 13px Georgia,serif; letter-spacing:3px; color:#ffe6aa; text-shadow:0 2px 8px #000; margin-bottom:5px; }
+  #bossBarOuter { height:13px; border:1px solid #f7d58a; border-radius:20px; padding:2px; background:#080b13dd; box-shadow:0 0 18px #b92c3c77; }
+  #bossBarFill { height:100%; width:100%; border-radius:20px; background:linear-gradient(90deg,#781b31,#f04455,#ffc36b); transition:width .22s ease; }
+  #bossBarText { font-size:10px; color:#ffe9c2; margin-top:3px; text-shadow:0 2px 5px #000; }
+  #bossCinematic.gravity { background:radial-gradient(circle at 50% 45%,#542d75aa,#050611 74%); }
+  #bossCinematic.gravity strong { color:#e9d9ff; text-shadow:0 0 34px #b47bff,0 5px 20px #000; }
+  #secretTitle { position:fixed; z-index:75; top:18%; left:50%; transform:translate(-50%,-10px); opacity:0; pointer-events:none; text-align:center; color:#ffe9b3; font:900 clamp(22px,4vw,42px) Georgia,serif; letter-spacing:4px; text-shadow:0 0 25px #d99d42,0 4px 12px #000; transition:opacity .8s,transform .8s; white-space:nowrap; }
+  #secretTitle.show { opacity:1; transform:translate(-50%,0); }
+  #secretTitle small { display:block; margin-top:8px; font:700 10px 'Segoe UI',sans-serif; letter-spacing:4px; color:#d8c7a2; }
+  .treasure-hint { position:fixed; z-index:25; left:50%; bottom:15%; transform:translateX(-50%); padding:9px 18px; border:1px solid #e6c477; border-radius:30px; background:#080d19e8; color:#ffedc2; font-weight:800; font-size:12px; box-shadow:0 0 22px #e0ad4c44; pointer-events:none; }
+
+  /* Hiệu ứng chuyển màn mượt mà */
+  #fadeOverlay {
+    position: fixed;
+    inset: 0;
+    background: #020408;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 90;
+    transition: opacity 0.4s ease;
+  }
+  #fadeOverlay.active { opacity: 1; }
+
+  /* HUD Tổng thể */
+  #hud {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .top {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    max-width: 62%;
+  }
+  .pill {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pill.online {
+    border-color: rgba(46, 204, 113, 0.5);
+    color: #a7f3d0;
+  }
+  .dot-live {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2ecc71;
+    box-shadow: 0 0 10px #2ecc71;
+    display: inline-block;
+  }
+
+  .menu {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    display: flex;
+    gap: 6px;
+    pointer-events: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 42%;
+  }
+  .menu button {
+    padding: 8px 11px;
+    font-size: 12px;
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    position: relative;
+  }
+  .menu button.event-btn {
+    background: linear-gradient(135deg, rgba(180, 45, 65, 0.9), rgba(95, 20, 35, 0.95));
+    border-color: #ff9ff3;
+    animation: glowEvent 2s infinite ease-in-out;
+  }
+  @keyframes glowEvent {
+    0%, 100% { box-shadow: 0 0 12px rgba(255, 118, 117, 0.4); }
+    50% { box-shadow: 0 0 22px rgba(255, 211, 42, 0.85); }
+  }
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff3f34;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 1px solid #fff;
+  }
+
+  #liveTicker {
+    position: absolute;
+    top: 56px;
+    left: max(12px, env(safe-area-inset-left));
+    background: rgba(10, 15, 26, 0.78);
+    border: 1px solid rgba(243, 210, 133, 0.3);
+    border-radius: 10px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: #fde68a;
+    max-width: 380px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #toast {
+    position: absolute;
+    top: 92px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: rgba(12, 18, 30, 0.97);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--gold);
+    padding: 12px 26px;
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff6e0;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.65);
+    max-width: 90%;
+    z-index: 35;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  #center {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+    opacity: 1;
+  }
+  #center.fade-out { opacity: 0; }
+  #center h1 {
+    font: bold clamp(28px, 6vw, 56px) Georgia, serif;
+    letter-spacing: 6px;
+    margin: 0;
+    background: linear-gradient(to bottom, #fff7db, #d9a74a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  #center p {
+    color: #e7d9b5;
+    margin: 5px 0;
+    font-size: clamp(12px, 2vw, 14.5px);
+  }
+
+  #interactPrompt {
+    position: absolute;
+    bottom: 24%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.92);
+    pointer-events: auto;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(28, 38, 58, 0.96), rgba(14, 20, 32, 0.98));
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 25px rgba(243, 210, 133, 0.6);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 15px;
+    color: #fff;
+    animation: pulsePrompt 1.6s infinite ease-in-out;
+  }
+  #interactPrompt.visible {
+    display: flex;
+    transform: translateX(-50%) scale(1);
+  }
+  @keyframes pulsePrompt {
+    0%, 100% { box-shadow: 0 0 18px rgba(243, 210, 133, 0.35); }
+    50% { box-shadow: 0 0 32px rgba(243, 210, 133, 0.85); }
+  }
+
+  #touchLookZone {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 55vw;
+    height: 100vh;
+    z-index: 5;
+    display: none;
+  }
+
+  /* Điều khiển Mobile */
+  #mobileControls {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 15;
+    display: none;
+  }
+  #joy {
+    position: absolute;
+    bottom: max(22px, env(safe-area-inset-bottom));
+    left: max(24px, env(safe-area-inset-left));
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    border: 2px solid rgba(243, 210, 133, 0.45);
+    background: radial-gradient(circle, rgba(255,255,255,0.08), rgba(10,16,28,0.45));
+    pointer-events: auto;
+  }
+  #knob {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    left: 32px;
+    top: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff4d4, #c99b42);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    pointer-events: none;
+    will-change: transform;
+  }
+  .left-stance-btns {
+    position: absolute;
+    bottom: calc(max(22px, env(safe-area-inset-bottom)) + 126px);
+    left: max(28px, env(safe-area-inset-left));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: auto;
+  }
+  .stance-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    padding: 0;
+    background: var(--glass);
+    border: 1.5px solid var(--gold);
+    font-size: 20px;
+    display: grid;
+    place-items: center;
+  }
+  .stance-btn.active {
+    background: linear-gradient(135deg, #c99b42, #6e4c1e);
+    box-shadow: 0 0 15px rgba(243, 210, 133, 0.6);
+  }
+  .right-combat-btns {
+    position: absolute;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    right: max(24px, env(safe-area-inset-right));
+    display: flex;
+    gap: 14px;
+    align-items: flex-end;
+    pointer-events: auto;
+  }
+  .combat-btn {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    padding: 0;
+    background: var(--glass);
+    border: 1.5px solid var(--gold);
+    font-size: 24px;
+    display: grid;
+    place-items: center;
+  }
+  .combat-btn.atk {
+    width: 72px;
+    height: 72px;
+    font-size: 28px;
+    background: linear-gradient(145deg, rgba(168, 56, 56, 0.88), rgba(75, 20, 20, 0.92));
+  }
+
+  #pcHint {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 15, 25, 0.78);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #cbd5e1;
+    pointer-events: none;
+  }
+
+  /* ROWARIOR LEGEND UI — combat HUD inspired by mobile arena games */
+  #panel { background: radial-gradient(ellipse at top, rgba(28,43,70,.96), rgba(2,6,14,.97)); }
+  .panelbox { background: linear-gradient(155deg, #1b2a43 0%, #0b1220 58%, #101a2d 100%); }
+  .setting-card { box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 12px 28px rgba(0,0,0,.2); }
+  button { letter-spacing: .15px; }
+  .combat-btn, .stance-btn { backdrop-filter: blur(10px); box-shadow: 0 5px 18px #0008, inset 0 1px 0 #ffffff30; }
+  .combat-btn.atk { box-shadow: 0 0 24px #a8323270, inset 0 1px 0 #ffffff55; }
+  #bossCinematic {
+    position:fixed; inset:0; z-index:80; display:none; pointer-events:none;
+    align-items:center; justify-content:center; flex-direction:column; text-align:center;
+    background:radial-gradient(circle, rgba(125,25,35,.28), rgba(2,4,10,.88));
+    animation:cinematicIn .45s ease both;
+  }
+  #bossCinematic.show { display:flex; }
+  #bossCinematic strong { font:900 clamp(30px,7vw,76px) Georgia,serif; color:#ffe7a5;
+    letter-spacing:5px; text-shadow:0 0 28px #ffb43c,0 5px 20px #000; }
+  #bossCinematic span { margin-top:12px; color:#f6d9b0; letter-spacing:3px; font-weight:800; }
+  @keyframes cinematicIn { from{opacity:0;transform:scale(1.14)} to{opacity:1;transform:scale(1)} }
+  .toggle-switch { padding:7px 14px!important; min-width:74px; border-radius:22px!important; }
+  /* Panel Menu Sáng Tạo & Sang Trọng */
+  #panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(3, 6, 14, 0.9);
+    backdrop-filter: blur(12px);
+    overflow: auto;
+    padding: 16px;
+  }
+  .panelbox {
+    max-width: 950px;
+    margin: 14px auto;
+    background: linear-gradient(180deg, #162136, #0c1320);
+    border: 1.5px solid var(--gold);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.85);
+  }
+  .panelhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(243, 210, 133, 0.28);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+  .panelhead h2 { margin: 0; color: var(--gold); font-size: 21px; letter-spacing: 0.5px; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  .item {
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(15, 23, 42, 0.65));
+    border: 1px solid rgba(243, 210, 133, 0.28);
+    border-radius: 16px;
+    padding: 14px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s ease, border-color 0.2s ease;
+  }
+  .item:hover {
+    transform: translateY(-3px);
+    border-color: var(--gold);
+  }
+  .item.rarity-mythic {
+    border-color: #ff4757;
+    background: linear-gradient(160deg, rgba(255, 71, 87, 0.16), rgba(20, 15, 30, 0.85));
+    box-shadow: 0 0 18px rgba(255, 71, 87, 0.25);
+  }
+  .item.rarity-legendary {
+    border-color: #f1c40f;
+    background: linear-gradient(160deg, rgba(241, 196, 15, 0.14), rgba(20, 22, 35, 0.85));
+  }
+  .item.rarity-epic {
+    border-color: #a55eea;
+    background: linear-gradient(160deg, rgba(165, 94, 234, 0.14), rgba(20, 22, 35, 0.85));
+  }
+  .rarity-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    letter-spacing: 0.6px;
+  }
+  .tag-mythic { background: #ff4757; color: #fff; }
+  .tag-legendary { background: #f39c12; color: #111; }
+  .tag-epic { background: #8e44ad; color: #fff; }
+  .tag-rare { background: #2980b9; color: #fff; }
+
+  .item-art {
+    width: 70px;
+    height: 70px;
+    margin: 4px auto 8px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle, rgba(243, 210, 133, 0.22), rgba(0,0,0,0.45));
+    border: 1.5px solid rgba(243, 210, 133, 0.45);
+    font-size: 34px;
+    box-shadow: inset 0 0 12px rgba(243, 210, 133, 0.2);
+  }
+  .item b { font-size: 14px; color: #fff8e7; display: block; }
+  .item .stat-pill {
+    font-size: 11px;
+    color: #7bed9f;
+    background: rgba(46, 204, 113, 0.14);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 8px;
+    padding: 3px 6px;
+    margin: 6px 0;
+  }
+  .item p { font-size: 11.5px; color: #cbd2dc; margin: 4px 0 10px; line-height: 1.35; }
+  .item button { width: 100%; }
+
+  .wheel-wrapper {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 14px auto;
+  }
+  .wheel-pointer {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 26px solid #ff3f34;
+    z-index: 5;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.8));
+  }
+  #wheelDisc {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 6px solid var(--gold);
+    box-shadow: 0 0 28px rgba(243, 210, 133, 0.45), inset 0 0 20px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    transition: transform 3.2s cubic-bezier(0.15, 0.85, 0.22, 1);
+  }
+  .wheel-hub {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff3c4, #b8862d);
+    border: 3px solid #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    color: #2c1a05;
+    font-size: 12px;
+    z-index: 4;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  }
+
+  .event-banner {
+    background: linear-gradient(135deg, rgba(168, 42, 62, 0.48), rgba(32, 46, 78, 0.88));
+    border: 1px solid var(--gold);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .event-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .event-tabs button {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(243, 210, 133, 0.35);
+    font-size: 13px;
+  }
+  .event-tabs button.active {
+    background: linear-gradient(145deg, #c99b42, #6e4c1e);
+    border-color: var(--gold);
+  }
+  .quest-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    gap: 12px;
+  }
+  .progress-bar {
+    height: 8px;
+    background: rgba(0,0,0,0.45);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 6px;
+    width: 100%;
+    max-width: 240px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f1c40f, #e67e22);
+    transition: width 0.3s ease;
+  }
+
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .setting-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(243, 210, 133, 0.25);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .setting-card h4 {
+    margin: 0 0 10px;
+    color: var(--gold);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    font-size: 13px;
+  }
+  .toggle-row:last-child { border-bottom: none; }
+
+  .about-game-box {
+    background: linear-gradient(145deg, rgba(22, 33, 54, 0.95), rgba(12, 18, 30, 0.98));
+    border: 1.5px solid var(--gold);
+    border-radius: 16px;
+    padding: 18px;
+    margin-top: 14px;
+    box-shadow: inset 0 0 25px rgba(243, 210, 133, 0.12);
+  }
+  .vn-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(90deg, #da251d, #9b1610);
+    border: 1px solid #ffff00;
+    color: #fff;
+    font-weight: 800;
+    font-size: 12.5px;
+    padding: 5px 14px;
+    border-radius: 50px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(218, 37, 29, 0.4);
+  }
+  .about-game-box p {
+    font-size: 13px;
+    color: #dbe4f0;
+    line-height: 1.55;
+    margin: 6px 0;
+  }
+  .dev-signature {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(243, 210, 133, 0.4);
+    text-align: center;
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--gold-bright);
+    letter-spacing: 0.5px;
+  }
+
+  input[type="text"], input:not([type]) {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--gold-dark);
+    background: #0b111d;
+    color: white;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  /* ROWARIOR LEGEND v7 — premium kingdom interface */
+  #appViewport { position:fixed; inset:0; width:100vw; height:100vh; overflow:hidden; background:#03050a; }
+  #appViewport canvas { position:absolute; inset:0; width:100%; height:100%; }
+  #center { padding:22px 30px; border:1px solid #e9c97988; border-radius:24px; background:linear-gradient(145deg,#091528d9,#101b30a8); box-shadow:0 18px 65px #0009,inset 0 1px #ffffff22,0 0 42px #e7b85b22; backdrop-filter:blur(12px); }
+  #center h1 { letter-spacing:8px; color:#fff0c5; text-shadow:0 0 14px #ffcf72,0 0 38px #c18b36; }
+  #center p { color:#d8e4f5; text-shadow:0 2px 6px #000; }
+  .menu button { border:1px solid #f3d28588; border-radius:13px; background:linear-gradient(145deg,#182943eF,#080f1feF); box-shadow:0 7px 22px #0008,inset 0 1px #ffffff25; transition:transform .18s,border-color .18s,filter .18s; }
+  .menu button:hover { transform:translateY(-2px); border-color:#ffe9a8; filter:brightness(1.22); }
+  .menu button.event-btn { background:linear-gradient(135deg,#9b2442f2,#40172ff2); }
+  .pill { border-color:#e9c97988; box-shadow:0 7px 22px #0007,inset 0 1px #ffffff1c; }
+  #liveTicker { border-color:#e9c97988; background:linear-gradient(90deg,#111c31ed,#241a2ded,#111c31ed); box-shadow:0 6px 22px #0008; }
+  #interactPrompt { background:linear-gradient(120deg,#3a2a16f5,#101b30f5); border-color:#ffe5a0; box-shadow:0 0 32px #e9b94c77,inset 0 1px #fff5; }
+  #panel { background:radial-gradient(ellipse at 50% 0%,#263b5bdc 0%,#070c18f5 65%,#02040af7 100%); backdrop-filter:blur(18px); }
+  .panelbox { position:relative; overflow:hidden; border:1px solid #f5d58b; border-radius:24px; background:linear-gradient(145deg,#1c2d49f7 0%,#101a2cf8 48%,#080e1bf9 100%); box-shadow:0 30px 90px #000c,inset 0 1px #ffffff24,0 0 42px #d9a84a20; }
+  .panelbox:before { content:""; position:absolute; inset:0 0 auto; height:3px; background:linear-gradient(90deg,transparent,#fff0b2,#c18b36,#fff0b2,transparent); }
+  .panelhead { border-bottom-color:#eacb7a66; }
+  .panelhead h2 { text-shadow:0 0 18px #e5b85c66; letter-spacing:1px; }
+  .item,.setting-card { border-color:#e9c97955; background:linear-gradient(145deg,#ffffff12,#081225b8); box-shadow:inset 0 1px #ffffff18,0 12px 26px #0003; }
+  .item:hover { box-shadow:0 12px 30px #0008,0 0 22px #e9c97933; }
+  .item-art { box-shadow:inset 0 0 18px #f3d28530,0 0 22px #d8a64a22; }
+  .setting-card h4 { text-shadow:0 0 12px #e8c16b55; }
+  .event-banner { background:linear-gradient(110deg,#74283bbd,#253c63e8,#3d2c57c9); box-shadow:inset 0 1px #fff3,0 12px 28px #0004; }
+  #mobileControls button { box-shadow:0 8px 24px #0009,inset 0 1px #ffffff55; }
+  @media (orientation:portrait) and (max-width:950px) {
+    #appViewport #rotateOverlay { display:none !important; }
+    #appViewport #mobileControls { transform:none; }
+    #appViewport #hud { opacity:1; }
+    #appViewport #pcHint { display:none; }
+    #appViewport #panel { overflow-y:auto; }
+  }
+  @media (max-height:520px) {
+    .panelbox { margin:4px auto; padding:14px; }
+    #center { padding:12px 20px; }
+    #center h1 { font-size:clamp(28px,5vw,52px); }
+    #mobileControls .left-stance-btns { bottom:calc(env(safe-area-inset-bottom) + 106px); }
+    #joy { width:96px;height:96px; }
+    #knob { left:26px;top:26px; }
+  }
+
+</style>
+
+<style id="rowarior-v8-modern-ui">
+:root{--gold:#8df7ff;--gold-bright:#e8fdff;--gold-dark:#287f9b;--glass:rgba(7,14,29,.78);--glass-border:rgba(113,231,255,.34)}
+body{background:#050914;color:#f3f8ff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+button{background:linear-gradient(135deg,#174d69,#14233e 55%,#351c52);border:1px solid #73eaff;color:#f7fcff;border-radius:13px;box-shadow:0 8px 24px #0008,inset 0 1px #ffffff30}
+#appViewport{background:#050914}
+#appViewport canvas{display:block}
+#center{background:linear-gradient(145deg,#091a2be8,#11182fe8 60%,#211432df);border:1px solid #74eaff88;border-radius:22px;box-shadow:0 22px 70px #000b,0 0 42px #24c9ed22,inset 0 1px #ffffff20;backdrop-filter:blur(20px)}
+#center h1{font-family:Inter,system-ui,sans-serif;font-weight:950;letter-spacing:.18em;color:#effcff;text-shadow:0 0 12px #59e9ff,0 0 42px #268cff}
+#center p{color:#c5d8ee}
+.menu{gap:8px;max-width:52%}
+.menu button{padding:9px 13px;border:1px solid #73eaff66;border-radius:13px;background:linear-gradient(145deg,#102a43ed,#0a1022f2);box-shadow:0 8px 22px #0008,inset 0 1px #ffffff20;font-weight:800;letter-spacing:.01em}
+.menu button.event-btn{background:linear-gradient(135deg,#7b245d,#291b49);border-color:#ff83d1;box-shadow:0 0 22px #ff4fc733}
+.pill{background:linear-gradient(120deg,#0b2035eF,#10152bea);border:1px solid #62dff477;border-radius:13px;color:#f2fbff;box-shadow:0 8px 22px #0008,inset 0 1px #ffffff20;backdrop-filter:blur(14px)}
+#liveTicker{border:1px solid #67dff466;border-radius:13px;background:linear-gradient(90deg,#0a2134ee,#17213fee,#211535ee);box-shadow:0 8px 28px #0008;color:#e5faff}
+#interactPrompt{background:linear-gradient(120deg,#087e9b,#253b70 55%,#5a2874);border:1px solid #a1f6ff;border-radius:16px;box-shadow:0 0 30px #36dfff55,0 10px 28px #0009}
+#panel{background:radial-gradient(ellipse at 50% 0%,#183b58ee,#070d1bf7 62%,#030611fa);backdrop-filter:blur(22px)}
+.panelbox{border:1px solid #6deaff88;border-radius:22px;background:linear-gradient(145deg,#10243af7,#0b1427fa 58%,#15112bf7);box-shadow:0 30px 100px #000d,0 0 38px #27cfff22,inset 0 1px #ffffff22}
+.panelhead{border-bottom:1px solid #69e8ff44}
+.panelhead h2,.setting-card h4{color:#9af3ff;text-shadow:0 0 14px #3bdfff44}
+.setting-card{border:1px solid #64dff044;border-radius:16px;background:linear-gradient(145deg,#132b42aa,#0b1326cc);box-shadow:inset 0 1px #ffffff12}
+#hud .top{gap:8px}
+#bossBarWrap{top:max(16px,env(safe-area-inset-top));width:min(560px,62vw)}
+#bossBarTitle{font:900 12px Inter,system-ui,sans-serif;letter-spacing:4px;color:#e7fbff}
+#bossBarOuter{height:15px;border:1px solid #ff80d7;background:#070916ee;box-shadow:0 0 24px #e73f9b66}
+#bossBarFill{background:linear-gradient(90deg,#5423a0,#e23d9c,#ffcf76)}
+#bossCinematic{position:fixed;inset:0;z-index:900;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px;padding:28px;background:radial-gradient(circle at 50% 43%,#20234c22,#02030af7 70%);opacity:0;pointer-events:none;transition:opacity .28s ease}
+#bossCinematic.show{opacity:1;pointer-events:auto}
+#bossCinematic strong{font:1000 clamp(28px,6vw,76px)/1.05 Inter,system-ui,sans-serif;letter-spacing:.13em;color:#fff;text-shadow:0 0 14px #e8a5ff,0 0 48px #7e4cff,0 5px 22px #000;animation:bossTitlePulse 1.6s ease-in-out infinite alternate}
+#bossCinematic span{font:900 clamp(10px,1.8vw,16px) Inter,system-ui,sans-serif;letter-spacing:.32em;color:#bdf8ff;text-shadow:0 0 20px #4cdfff}
+#bossCinematic.boss-reveal{background:radial-gradient(ellipse at 50% 48%,#28134b22 0%,#08091855 42%,#010208aa 82%);overflow:hidden}
+#bossCinematic.boss-reveal:before,#bossCinematic.boss-reveal:after{content:"";position:absolute;left:50%;top:50%;width:min(78vw,780px);aspect-ratio:1;border:1px solid #9a72ff66;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 45px #884dff33,inset 0 0 55px #884dff22;animation:gravityRing 3.8s linear infinite}
+#bossCinematic.boss-reveal:after{width:min(58vw,580px);border-color:#5deaff55;animation-duration:2.4s;animation-direction:reverse}
+#bossCinematic.boss-reveal strong,#bossCinematic.boss-reveal span{position:relative;z-index:1}
+#bossCinematic.boss-reveal strong{margin-top:min(42vh,280px);font-size:clamp(22px,5vw,58px)}
+#bossCinematic.boss-reveal span{background:#080d20aa;border:1px solid #9b7cff77;border-radius:30px;padding:10px 18px}
+@keyframes gravityRing{from{rotate:0deg;scale:.88}50%{scale:1.08}to{rotate:360deg;scale:.88}}
+@keyframes bossTitlePulse{from{filter:brightness(.85);transform:scale(.985)}to{filter:brightness(1.3);transform:scale(1.015)}}
+@media (orientation:portrait) and (max-width:950px){
+ #appViewport .menu{max-width:55%;gap:5px}
+ #appViewport .menu button{font-size:clamp(10px,1.5vw,13px);padding:7px 9px}
+ #appViewport #hud .top{gap:5px}
+ #appViewport .pill{font-size:clamp(10px,1.5vw,13px);padding:6px 9px}
+ #appViewport #mobileControls{transform:none}
+}
+@media (max-width:700px){
+ .panelbox{padding:14px;border-radius:17px}
+ .menu{max-width:60%}
+}
+</style>
+
+</head>
+<body>
+
+<!-- MÀN HÌNH CHỜ & KHỞI ĐỘNG NGANG (Style FreeFire / Arena of Valor) -->
+<div id="startScreen">
+  <div style="font-size:56px;margin-bottom:8px">⚔️🐉</div>
+  <h1>ROWARIOR</h1>
+  <p>THE FORGOTTEN KINGDOM · LEGENDARY REALM<br>Game 3D hành động chiến đấu, giải mã mê cung 100 rương báu, 16 màn chơi đỉnh cao và sảnh chờ sáng tạo tối tân!</p>
+  <button class="launch-btn" onclick="launchGame()">VÀO TRẬN NGAY 🚀</button>
+  <div style="font-size:12px;color:#94a3b8;margin-top:16px">Khuyên dùng màn hình ngang để có trải nghiệm chiến đấu hoàn hảo nhất.</div>
+</div>
+
+<div id="rotateOverlay">
+  <div class="rotate-card">
+    <div style="font-size:52px;margin-bottom:8px">📱↻</div>
+    <h2 style="color:var(--gold);margin:0 0 10px">LANDSCAPE BATTLE MODE</h2>
+    <p style="color:#cbd5e1;max-width:340px;font-size:14px;line-height:1.6">Hãy xoay thiết bị sang ngang để mở toàn bộ HUD, bản đồ và cụm phím chiến đấu ROWARIOR.</p>
+  </div>
+</div>
+
+<div id="loading" style="display:none"></div>
+<div id="fadeOverlay"></div>
+<div id="touchLookZone"></div>
+
+<div id="appViewport">
+  <div id="hud">
+    <div class="top">
+      <div class="pill" id="playerLabel">⚔️ Chiến binh</div>
+      <div class="pill" id="gold">🪙 150</div>
+      <div class="pill" id="tickets">🎟️ 3</div>
+      <div class="pill" id="health">❤️ 100/100</div>
+      <div class="pill" id="stage">🏰 Sảnh Hoàng Gia</div>
+      <div class="pill online"><span class="dot-live"></span> <span id="onlineCount">1,842</span> trực tuyến</div>
+    </div>
+    <div id="liveTicker">🔥 Chào mừng đến Sảnh Hoàng Gia ROWARIOR LEGEND! Khám phá 16 màn chơi và Sảnh Chờ Sáng Tạo tối tân!</div>
+
+    <div class="menu">
+      <button class="event-btn" onclick="openPanel('events')">🎁 Sự Kiện<span class="badge" id="eventBadge">!</span></button>
+      <button onclick="openPanel('inventory')">🎒 Túi đồ</button>
+      <button onclick="openPanel('skins')">🛡️ Trang phục</button>
+      <button onclick="openPanel('shop')">🛒 Cửa hàng</button>
+      <button onclick="openPanel('friends')">☰ Bạn bè</button>
+      <button onclick="toggleShoulderLock()" id="lockCamBtn">🎯 Góc nhìn: Tự do</button>
+      <button onclick="openPanel('settings')">⚙️</button>
+    </div>
+
+    <div id="toast"></div>
+
+    <div id="center">
+      <h1>ROWARIOR</h1>
+      <p>THE FORGOTTEN KINGDOM · LEGENDARY REALM</p>
+      <p>Đi sát <b>8 cánh cửa World 1</b> hoặc <b>8 cánh cửa World 2 (Vực Thẳm)</b> và bấm tương tác để vào màn!</p>
+    </div>
+
+    <button id="interactPrompt" onclick="interact()">
+      <span id="promptIcon">🚪</span>
+      <span id="promptText">Tương tác (E)</span>
+    </button>
+
+    <div id="pcHint">PC: <b>WASD</b> Di chuyển · <b>Kéo chuột</b> Xoay góc nhìn · <b>Space</b> Nhảy · <b>C</b> Ngồi · <b>F</b> Đánh · <b>Q</b> Đỡ · <b>E</b> Tương tác</div>
+  </div>
+
+  <!-- Điều khiển riêng cho Mobile -->
+  <div id="mobileControls">
+    <div class="left-stance-btns">
+      <button class="stance-btn" id="btnJump" aria-label="Nhảy">⬆️</button>
+      <button class="stance-btn" id="btnCrouch" aria-label="Ngồi">🧎</button>
+    </div>
+    <div id="joy"><div id="knob"></div></div>
+    <div class="right-combat-btns">
+      <button class="combat-btn" id="btnDefend" aria-label="Phòng thủ">🛡️</button>
+      <button class="combat-btn atk" id="btnAttack" aria-label="Tấn công">⚔️</button>
+    </div>
+  </div>
+</div>
+
+<div id="bossCinematic"><strong id="cinematicTitle">GRAVITY BREAK</strong><span id="cinematicSub">KẾT LIỄU HUYỀN THOẠI</span></div>
+<div id="bossBarWrap"><div id="bossBarTitle">THE ABYSSAL WARDEN</div><div id="bossBarOuter"><div id="bossBarFill"></div></div><div id="bossBarText">BOSS · 100%</div></div>
+<div id="secretTitle">SECRET TREASURE SANCTUM<small>THE SEALED CHAMBER · UNKNOWN RELIC</small></div>
+<div id="panel">
+  <div class="panelbox">
+    <div class="panelhead">
+      <h2 id="panelTitle">Sự kiện</h2>
+      <button onclick="closePanel()">Đóng ✕</button>
+    </div>
+    <div id="panelContent"></div>
+  </div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const $ = id => document.getElementById(id);
+
+const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || window.innerWidth <= 950;
+if (isMobile) {
+  $('mobileControls').style.display = 'block';
+  $('touchLookZone').style.display = 'block';
+  $('pcHint').style.display = 'none';
+}
+
+let gameBooted = false;
+window.launchGame = async (fromUser = true) => {
+  if (gameBooted) return;
+  gameBooted = true;
+  if (fromUser) {
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('landscape').catch(()=>{});
+      }
+    } catch(e) {}
+  }
+  const splash = $('startScreen');
+  splash.style.opacity = '0';
+  splash.style.pointerEvents = 'none';
+  setTimeout(() => {
+    splash.style.display = 'none';
+    resizeGameView();
+    buildLobby();
+  }, 450);
+};
+
+// ==========================================
+// 1. TẠO TEXTURE PROCEDURAL 3D CHÂN THỰC
+// ==========================================
+function createProceduralTexture(type) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+
+  if (type === 'marble') {
+    ctx.fillStyle = '#1e2636';
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.strokeStyle = 'rgba(243, 210, 133, 0.25)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(2, 2, 124, 124);
+    ctx.strokeRect(130, 2, 124, 124);
+    ctx.strokeRect(2, 130, 124, 124);
+    ctx.strokeRect(130, 130, 124, 124);
+  } else if (type === 'stone') {
+    ctx.fillStyle = '#404652';
+    ctx.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 600; i++) {
+      ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)';
+      ctx.fillRect(Math.random() * 256, Math.random() * 256, 6,
