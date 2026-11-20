@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cteow - Dpi•File</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #1e293b, #090d16);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Màn hình chữ OPEN khi mới vào */
+        #open-screen {
+            position: fixed;
+            inset: 0;
+            background: #070b14;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        #open-screen.hidden {
+            opacity: 0;
+            transform: scale(1.1);
+            pointer-events: none;
+        }
+
+        .open-btn {
+            background: transparent;
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.75);
+            padding: 16px 46px;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 6px;
+            border-radius: 999px;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(96, 165, 250, 0.45), inset 0 0 15px rgba(255, 255, 255, 0.15);
+            animation: pulseOpen 1.8s infinite ease-in-out;
+            transition: all 0.25s ease;
+        }
+
+        .open-btn:hover {
+            background: #ffffff;
+            color: #090d16;
+            transform: scale(1.06);
+        }
+
+        .open-hint {
+            margin-top: 14px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            letter-spacing: 1px;
+        }
+
+        @keyframes pulseOpen {
+            0%, 100% { box-shadow: 0 0 20px rgba(96, 165, 250, 0.4); }
+            50% { box-shadow: 0 0 38px rgba(0, 240, 255, 0.85); }
+        }
+
+        /* Khung chính lắc lư nhẹ */
+        .profile-card {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 26px;
+            padding: 36px 26px 30px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .profile-card.show {
+            opacity: 1;
+            animation: gentleSway 4.5s ease-in-out infinite;
+        }
+
+        @keyframes gentleSway {
+            0% { transform: translateY(0px) rotate(-1.5deg); }
+            50% { transform: translateY(-6px) rotate(1.5deg); }
+            100% { transform: translateY(0px) rotate(-1.5deg); }
+        }
+
+        /* Avatar + cánh thiên thần gắn liền ở khung */
+        .avatar-frame {
+            position: relative;
+            width: 148px;
+            height: 148px;
+            margin: 0 auto 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .angel-wings {
+            position: absolute;
+            width: 250px;
+            height: 150px;
+            top: -4px;
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.75));
+            animation: flapWings 2.4s ease-in-out infinite alternate;
+        }
+
+        @keyframes flapWings {
+            0% { transform: scaleX(0.95) translateY(2px); }
+            100% { transform: scaleX(1.05) translateY(-4px); }
+        }
+
+        .avatar-img {
+            width: 112px;
+            height: 112px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: relative;
+            z-index: 2;
+            border: 3px solid #7dd3fc;
+            box-shadow: 0 0 18px rgba(125, 211, 252, 0.65);
+        }
+
+        /* Dòng Dpi•File ngay dưới avatar */
+        .dpi-brand {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #38bdf8, #f472b6, #facc15, #38bdf8);
+            background-size: 250% auto;
+            -webkit-background-clip: text;
+            color: transparent;
+            animation: shineText 3.5s linear infinite;
+        }
+
+        @keyframes shineText {
+            0% { background-position: 0% center; }
+            100% { background-position: 250% center; }
+        }
+
+        /* Dòng chào theo khung giờ */
+        .greeting-time {
+            font-size: 15px;
+            font-weight: 600;
+            color: #bae6fd;
+            margin-bottom: 14px;
+            min-height: 22px;
+        }
+
+        /* Khu vực tự do ghi / làm gì tùy thích */
+        .custom-box {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px dashed rgba(255, 255, 255, 0.22);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 22px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #e2e8f0;
+        }
+
+        /* Dưới cùng: TikTok & Zalo */
+        .social-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .social-btn:hover {
+            transform: scale(1.03);
+        }
+
+        .tiktok-btn {
+            background: #050505;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        }
+
+        .zalo-btn {
+            background: linear-gradient(135deg, #0068ff, #00a8ff);
+            color: #ffffff;
+            box-shadow: 0 6px 18px rgba(0, 104, 255, 0.35);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Màn hình chữ OPEN -->
+    <div id="open-screen">
+        <button class="open-btn" onclick="openProfile()">OPEN</button>
+        <div class="open-hint">Chạm vào OPEN để mở</div>
+    </div>
+
+    <!-- Khung giới thiệu -->
+    <div class="profile-card" id="profile-card">
+        <!-- Avatar + Cánh thiên thần ở khung -->
+        <div class="avatar-frame">
+            <svg class="angel-wings" viewBox="0 0 240 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Cánh trái -->
+                <path d="M106 68 C74 22, 22 24, 6 58 C24 60, 42 54, 54 68 C34 70, 16 76, 20 92 C40 88, 60 82, 82 74 C66 84, 54 94, 62 106 C80 98, 96 86, 108 75 Z" fill="rgba(255,255,255,0.9)" />
+                <!-- Cánh phải -->
+                <path d="M134 68 C166 22, 218 24, 234 58 C216 60, 198 54, 186 68 C206 70, 224 76, 220 92 C200 88, 180 82, 158 74 C174 84, 186 94, 178 106 C160 98, 144 86, 132 75 Z" fill="rgba(255,255,255,0.9)" />
+            </svg>
+            <!-- Thay avatar.jpg bằng tên file ảnh bạn lưu -->
+            <img src="avatar.jpg" alt="Avatar Cteow" class="avatar-img">
+        </div>
+
+        <!-- Dpi•File dưới avatar -->
+        <div class="dpi-brand">Dpi•File</div>
+
+        <!-- Dòng thay đổi theo khung giờ -->
+        <div class="greeting-time" id="greeting-time"></div>
+
+        <!-- Phần tự do ghi / làm gì tùy thích -->
+        <div class="custom-box" contenteditable="true">
+            Cteow • Chỗ này thích ghi gì hoặc thêm nút/hiệu ứng gì tùy ý nhé ✨
+        </div>
+
+        <!-- Dưới cùng: TikTok & Zalo -->
+        <div class="social-links">
+            <a href="https://www.tiktok.com/@cteowdpi.ff" target="_blank" rel="noopener noreferrer" class="social-btn tiktok-btn">
+                <span>🎵 TikTok: @cteowdpi.ff</span>
+            </a>
+            <a href="https://zalo.me/84583516778" target="_blank" rel="noopener noreferrer" class="social-btn zalo-btn">
+                <span>💬 Zalo Cteow: 84583516778</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function openProfile() {
+            document.getElementById('open-screen').classList.add('hidden');
+            document.getElementById('profile-card').classList.add('show');
+        }
+
+        function updateGreetingByTime() {
+            const hour = new Date().getHours();
+            const el = document.getElementById('greeting-time');
+            let text = '';
+
+            if (hour >= 5 && hour < 12) {
+                text = '☀️ Good Morning • Chào buổi sáng';
+            } else if (hour >= 12 && hour < 17) {
+                text = '🌤️ Good Afternoon • Chào buổi chiều';
+            } else if (hour >= 17 && hour < 21) {
+                text = '🌅 Good Evening • Chào buổi tối';
+            } else {
+                text = '🌙 Good Night • Chúc ngủ ngon';
+            }
+
+            el.textContent = text;
+        }
+
+        updateGreetingByTime();
+    </script>
+</body>
+</html>
